@@ -1,0 +1,138 @@
+/*
+ * Logback GELF - zero dependencies Logback GELF appender library.
+ * Copyright (C) 2016 Oliver Siegmar
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+package de.siegmar.logbackgelf;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.DeflaterOutputStream;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.UnsynchronizedAppenderBase;
+
+abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+
+    private static final int DEFAULT_GELF_PORT = 12201;
+
+    private String graylogHost;
+    private int graylogPort = DEFAULT_GELF_PORT;
+    private GelfLayout layout;
+    private boolean useCompression = true;
+
+    public String getGraylogHost() {
+        return graylogHost;
+    }
+
+    public void setGraylogHost(final String graylogHost) {
+        this.graylogHost = graylogHost;
+    }
+
+    public int getGraylogPort() {
+        return graylogPort;
+    }
+
+    public void setGraylogPort(final int graylogPort) {
+        this.graylogPort = graylogPort;
+    }
+
+    public GelfLayout getLayout() {
+        return layout;
+    }
+
+    public void setLayout(final GelfLayout layout) {
+        this.layout = layout;
+    }
+
+    public boolean isUseCompression() {
+        return useCompression;
+    }
+
+    public void setUseCompression(final boolean useCompression) {
+        this.useCompression = useCompression;
+    }
+
+    @SuppressWarnings("checkstyle:illegalcatch")
+    @Override
+    public final void start() {
+        if (graylogHost == null) {
+            addError("No graylogHost configured");
+            return;
+        }
+
+        if (layout == null) {
+            layout = new GelfLayout();
+            layout.setContext(getContext());
+            layout.start();
+        }
+
+        try {
+            startAppender();
+
+            super.start();
+        } catch (final Exception e) {
+            addError("Couldn't start appender", e);
+        }
+    }
+
+    protected abstract void startAppender() throws IOException;
+
+    @SuppressWarnings("checkstyle:illegalcatch")
+    @Override
+    protected void append(final ILoggingEvent event) {
+        final String message = layout.doLayout(event);
+        final byte[] binMessage = message.getBytes(StandardCharsets.UTF_8);
+        final byte[] messageToSend = useCompression ? compress(binMessage) : binMessage;
+
+        try {
+            appendMessage(messageToSend);
+        } catch (final Exception e) {
+            // Could be IOException or some kind of RuntimeException
+            addError("Error sending GELF message", e);
+        }
+    }
+
+    private static byte[] compress(final byte[] binMessage) {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream(binMessage.length);
+        try {
+            try (final OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
+                deflaterOut.write(binMessage);
+            }
+        } catch (final IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return bos.toByteArray();
+    }
+
+    protected abstract void appendMessage(final byte[] messageToSend) throws IOException;
+
+    @Override
+    public void stop() {
+        super.stop();
+        try {
+            close();
+        } catch (final IOException e) {
+            addError("Couldn't close appender", e);
+        }
+    }
+
+    protected abstract void close() throws IOException;
+
+}
