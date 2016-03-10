@@ -103,7 +103,7 @@ Configuration
   sent, too. Default: false
 * **includeLevelName**: If true, the log level name (e.g. DEBUG) will be sent, too. Default: false
 * **shortPatternLayout**: Short message format. Default: `"%m%nopex"` 
-* **fullPatternLayout**: Full message format (Stacktrace). Default: `"%xEx"`
+* **fullPatternLayout**: Full message format (Stacktrace). Default: `"%m"`
 * **staticFields**: Additional, static fields to send to graylog. Defaults: none
 
 
