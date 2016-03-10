@@ -59,7 +59,7 @@ Advanced:
                 <pattern>%m%nopex</pattern>
             </shortPatternLayout>
             <fullPatternLayout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%xEx</pattern>
+                <pattern>%m</pattern>
             </fullPatternLayout>
             <staticField>app_name:backend</staticField>
             <staticField>os_arch:${os.arch}</staticField>
