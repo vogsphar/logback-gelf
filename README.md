@@ -8,7 +8,7 @@ Features
 --------
 
 - UDP (with chunking)
-- Compression (Deflate)
+- Deflate compression in UDP mode
 - Forwarding of MDC (Mapped Diagnostic Context)
 - Forwarding of caller data
 - Forwarding of static fields

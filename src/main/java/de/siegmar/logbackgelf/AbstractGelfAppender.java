@@ -19,11 +19,8 @@
 
 package de.siegmar.logbackgelf;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.zip.DeflaterOutputStream;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
@@ -35,7 +32,6 @@ abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingE
     private String graylogHost;
     private int graylogPort = DEFAULT_GELF_PORT;
     private GelfLayout layout;
-    private boolean useCompression = true;
 
     public String getGraylogHost() {
         return graylogHost;
@@ -59,14 +55,6 @@ abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingE
 
     public void setLayout(final GelfLayout layout) {
         this.layout = layout;
-    }
-
-    public boolean isUseCompression() {
-        return useCompression;
-    }
-
-    public void setUseCompression(final boolean useCompression) {
-        this.useCompression = useCompression;
     }
 
     @SuppressWarnings("checkstyle:illegalcatch")
@@ -99,26 +87,13 @@ abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingE
     protected void append(final ILoggingEvent event) {
         final String message = layout.doLayout(event);
         final byte[] binMessage = message.getBytes(StandardCharsets.UTF_8);
-        final byte[] messageToSend = useCompression ? compress(binMessage) : binMessage;
 
         try {
-            appendMessage(messageToSend);
+            appendMessage(binMessage);
         } catch (final Exception e) {
             // Could be IOException or some kind of RuntimeException
             addError("Error sending GELF message", e);
         }
-    }
-
-    private static byte[] compress(final byte[] binMessage) {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream(binMessage.length);
-        try {
-            try (final OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
-                deflaterOut.write(binMessage);
-            }
-        } catch (final IOException e) {
-            throw new IllegalStateException(e);
-        }
-        return bos.toByteArray();
     }
 
     protected abstract void appendMessage(final byte[] messageToSend) throws IOException;

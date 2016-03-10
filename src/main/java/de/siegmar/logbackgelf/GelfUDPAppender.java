@@ -19,16 +19,20 @@
 
 package de.siegmar.logbackgelf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.util.zip.DeflaterOutputStream;
 
 public class GelfUDPAppender extends AbstractGelfAppender {
 
     private DatagramChannel channel;
     private Integer maxChunkSize;
     private GelfUDPChunker chunker;
+    private boolean useCompression = true;
 
     public Integer getMaxChunkSize() {
         return maxChunkSize;
@@ -38,6 +42,15 @@ public class GelfUDPAppender extends AbstractGelfAppender {
         this.maxChunkSize = maxChunkSize;
     }
 
+    public boolean isUseCompression() {
+        return useCompression;
+    }
+
+    public void setUseCompression(final boolean useCompression) {
+        this.useCompression = useCompression;
+    }
+
+
     @Override
     protected void startAppender() throws IOException {
         channel = DatagramChannel.open();
@@ -45,7 +58,9 @@ public class GelfUDPAppender extends AbstractGelfAppender {
     }
 
     @Override
-    protected void appendMessage(final byte[] messageToSend) throws IOException {
+    protected void appendMessage(final byte[] binMessage) throws IOException {
+        final byte[] messageToSend = useCompression ? compress(binMessage) : binMessage;
+
         final InetSocketAddress remote = new InetSocketAddress(getGraylogHost(), getGraylogPort());
 
         for (final ByteBuffer chunk : chunker.chunks(messageToSend)) {
@@ -53,6 +68,18 @@ public class GelfUDPAppender extends AbstractGelfAppender {
                 channel.send(chunk, remote);
             }
         }
+    }
+
+    private static byte[] compress(final byte[] binMessage) {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream(binMessage.length);
+        try {
+            try (final OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
+                deflaterOut.write(binMessage);
+            }
+        } catch (final IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return bos.toByteArray();
     }
 
     @Override
