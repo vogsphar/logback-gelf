@@ -37,7 +37,6 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.ContextBase;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class GelfLayoutTest {
@@ -71,7 +70,9 @@ public class GelfLayoutTest {
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
-        assertNull(jsonNode.get("full_message"));
+
+        final String[] fullMessageLines = jsonNode.get("full_message").textValue().split("\r?\n");
+        assertEquals("message 1", fullMessageLines[0]);
     }
 
     private void basicValidation(final JsonNode jsonNode) {
@@ -107,13 +108,11 @@ public class GelfLayoutTest {
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
-        final String fullMessage = jsonNode.get("full_message").textValue();
-        final String[] fullMessageLines = fullMessage.split("\n");
 
-        assertTrue(fullMessageLines.length > 1);
-
-        assertEquals("java.lang.IllegalArgumentException: Example Exception", fullMessageLines[0]);
-        assertTrue(fullMessageLines[1].matches(
+        final String[] fullMessageLines = jsonNode.get("full_message").textValue().split("\r?\n");
+        assertEquals("message 1", fullMessageLines[0]);
+        assertEquals("java.lang.IllegalArgumentException: Example Exception", fullMessageLines[1]);
+        assertTrue(fullMessageLines[2].matches(
             "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
                 + "~\\[test-classes/:na\\]$"));
     }

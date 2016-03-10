@@ -42,7 +42,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
     private static final double MSEC_DIVIDER = 1000D;
 
     private static final String DEFAULT_SHORT_PATTERN = "%m%nopex";
-    private static final String DEFAULT_FULL_PATTERN = "%xEx";
+    private static final String DEFAULT_FULL_PATTERN = "%m%n";
 
     private String originHost;
     private boolean includeRawMessage;
