@@ -44,7 +44,7 @@ class GelfMessage {
                 final Map<String, Object> additionalFields) {
         this.host = Objects.requireNonNull(host, "host must not be null");
         this.shortMessage = Objects.requireNonNull(shortMessage, "shortMessage must not be null");
-        this.fullMessage = fullMessage;
+        this.fullMessage = fullMessage == null || fullMessage.isEmpty() ? null : fullMessage;
         this.timestamp = timestamp;
         this.level = level;
         this.additionalFields =

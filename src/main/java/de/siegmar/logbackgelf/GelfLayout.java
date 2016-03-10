@@ -174,9 +174,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
     @Override
     public String doLayout(final ILoggingEvent event) {
         final String shortMessage = shortPatternLayout.doLayout(event);
-        final String fullMessage = includeCallerData && event.hasCallerData()
-            ? fullPatternLayout.doLayout(event)
-            : null;
+        final String fullMessage = fullPatternLayout.doLayout(event);
         final double timestamp = event.getTimeStamp() / MSEC_DIVIDER;
         final Map<String, Object> additionalFields = mapAdditionalFields(event);
 

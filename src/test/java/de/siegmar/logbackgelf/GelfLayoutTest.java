@@ -37,6 +37,8 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.ContextBase;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class GelfLayoutTest {
 
@@ -69,6 +71,7 @@ public class GelfLayoutTest {
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
+        assertNull(jsonNode.get("full_message"));
     }
 
     private void basicValidation(final JsonNode jsonNode) {
@@ -78,6 +81,41 @@ public class GelfLayoutTest {
         assertEquals(7, jsonNode.get("level").intValue());
         assertEquals("main", jsonNode.get("_thread_name").textValue());
         assertEquals(LOGGER_NAME, jsonNode.get("_logger_name").textValue());
+    }
+
+    @Test
+    public void exception() throws IOException {
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg;
+        try {
+            throw new IllegalArgumentException("Example Exception");
+        } catch (final IllegalArgumentException e) {
+            logMsg = layout.doLayout(new LoggingEvent(
+                LOGGER_NAME,
+                logger,
+                Level.DEBUG,
+                "message {}",
+                e,
+                new Object[]{1})
+            );
+        }
+
+        final ObjectMapper om = new ObjectMapper();
+        final JsonNode jsonNode = om.readTree(logMsg);
+        basicValidation(jsonNode);
+        final String fullMessage = jsonNode.get("full_message").textValue();
+        final String[] fullMessageLines = fullMessage.split("\n");
+
+        assertTrue(fullMessageLines.length > 1);
+
+        assertEquals("java.lang.IllegalArgumentException: Example Exception", fullMessageLines[0]);
+        assertTrue(fullMessageLines[1].matches(
+            "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
+                + "~\\[test-classes/:na\\]$"));
     }
 
     @Test
