@@ -19,10 +19,11 @@
 
 package de.siegmar.logbackgelf;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,8 +31,7 @@ public class GelfMessageTest {
 
     @Test
     public void simple() {
-        final Map<String, Object> additionalFields = new HashMap<>();
-        additionalFields.put("foo", "bar");
+        final Map<String, Object> additionalFields = ImmutableMap.of("foo", (Object) "bar");
 
         final GelfMessage message =
             new GelfMessage("host", "short message", null, 123.456D, 6, additionalFields);
@@ -49,8 +49,7 @@ public class GelfMessageTest {
 
     @Test
     public void complete() {
-        final Map<String, Object> additionalFields = new HashMap<>();
-        additionalFields.put("foo", "bar");
+        final Map<String, Object> additionalFields = ImmutableMap.of("foo", (Object) "bar");
 
         final GelfMessage message =
             new GelfMessage("host", "short message", "full message", 123.456D, 6, additionalFields);

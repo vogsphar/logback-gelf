@@ -20,8 +20,7 @@
 package de.siegmar.logbackgelf;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.StringReader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.LineReader;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -71,8 +72,9 @@ public class GelfLayoutTest {
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
 
-        final String[] fullMessageLines = jsonNode.get("full_message").textValue().split("\r?\n");
-        assertEquals("message 1", fullMessageLines[0]);
+        final LineReader msg =
+            new LineReader(new StringReader(jsonNode.get("full_message").textValue()));
+        assertEquals("message 1", msg.readLine());
     }
 
     private void basicValidation(final JsonNode jsonNode) {
@@ -109,10 +111,12 @@ public class GelfLayoutTest {
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
 
-        final String[] fullMessageLines = jsonNode.get("full_message").textValue().split("\r?\n");
-        assertEquals("message 1", fullMessageLines[0]);
-        assertEquals("java.lang.IllegalArgumentException: Example Exception", fullMessageLines[1]);
-        assertTrue(fullMessageLines[2].matches(
+        final LineReader msg =
+            new LineReader(new StringReader(jsonNode.get("full_message").textValue()));
+
+        assertEquals("message 1", msg.readLine());
+        assertEquals("java.lang.IllegalArgumentException: Example Exception", msg.readLine());
+        assertTrue(msg.readLine().matches(
             "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
                 + "~\\[test-classes/:na\\]$"));
     }
@@ -136,9 +140,7 @@ public class GelfLayoutTest {
             null,
             new Object[]{1});
 
-        final Map<String, String> mdc = new HashMap<>();
-        mdc.put("mdc_key", "mdc_value");
-        event.setMDCPropertyMap(mdc);
+        event.setMDCPropertyMap(ImmutableMap.of("mdc_key", "mdc_value"));
 
         final String logMsg = layout.doLayout(event);
 

@@ -43,13 +43,13 @@ import static org.junit.Assert.assertTrue;
 
 public class GelfUDPAppenderTest {
 
-    private static final String LOGGER_NAME = GelfLayoutTest.class.getCanonicalName();
+    private static final String LOGGER_NAME = GelfUDPAppenderTest.class.getCanonicalName();
 
-    private ServerRunnable server;
+    private UDPServerRunnable server;
 
     @Before
     public void before() throws IOException, InterruptedException {
-        server = new ServerRunnable();
+        server = new UDPServerRunnable();
         final Thread serverThread = new Thread(server);
         serverThread.start();
     }
@@ -98,6 +98,15 @@ public class GelfUDPAppenderTest {
         gelfLayout.setOriginHost("localhost");
         gelfLayout.start();
 
+        final Logger logger = (Logger) LoggerFactory.getLogger(LOGGER_NAME);
+        logger.addAppender(buildAppender(useCompression, lc, gelfLayout));
+        logger.setAdditive(false);
+
+        return logger;
+    }
+
+    private GelfUDPAppender buildAppender(final boolean useCompression, final LoggerContext lc,
+                                          final GelfLayout gelfLayout) {
         final GelfUDPAppender gelfAppender = new GelfUDPAppender();
         gelfAppender.setContext(lc);
         gelfAppender.setName("GELF");
@@ -106,12 +115,7 @@ public class GelfUDPAppenderTest {
         gelfAppender.setGraylogPort(server.getPort());
         gelfAppender.setUseCompression(useCompression);
         gelfAppender.start();
-
-        final Logger logger = (Logger) LoggerFactory.getLogger(LOGGER_NAME);
-        logger.addAppender(gelfAppender);
-        logger.setAdditive(false);
-
-        return logger;
+        return gelfAppender;
     }
 
     private JsonNode receiveMessage() throws IOException, InterruptedException {
@@ -135,13 +139,13 @@ public class GelfUDPAppenderTest {
 
 }
 
-final class ServerRunnable implements Runnable {
+final class UDPServerRunnable implements Runnable {
 
     private final DatagramSocket server;
     private byte[] receivedData;
     private Semaphore semaphore = new Semaphore(1);
 
-    ServerRunnable() throws IOException, InterruptedException {
+    UDPServerRunnable() throws IOException, InterruptedException {
         server = new DatagramSocket(0);
         semaphore.acquire();
     }
