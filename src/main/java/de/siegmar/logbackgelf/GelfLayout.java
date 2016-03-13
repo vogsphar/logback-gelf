@@ -140,6 +140,8 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             addWarn("staticField key must not be empty");
         } else if ("id".equalsIgnoreCase(key)) {
             addWarn("staticField key name 'id' is prohibited");
+        } else if (dst.containsKey(key)) {
+            addWarn("additional field with key '" + key + "' is already set");
         } else if (!VALID_ADDITIONAL_FIELD_PATTERN.matcher(key).matches()) {
             addWarn("staticField key '" + key + "' is illegal. "
                 + "Keys must apply to regex ^[\\w\\.\\-]*$");
