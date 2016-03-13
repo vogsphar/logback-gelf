@@ -46,6 +46,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
     private String originHost;
     private boolean includeRawMessage;
+    private boolean includeMarker = true;
     private boolean includeMdcData = true;
     private boolean includeCallerData;
     private boolean includeLevelName;
@@ -67,6 +68,14 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
     public void setIncludeRawMessage(final boolean includeRawMessage) {
         this.includeRawMessage = includeRawMessage;
+    }
+
+    public boolean isIncludeMarker() {
+        return includeMarker;
+    }
+
+    public void setIncludeMarker(final boolean includeMarker) {
+        this.includeMarker = includeMarker;
     }
 
     public boolean isIncludeMdcData() {
@@ -195,9 +204,11 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             additionalFields.put("raw_message", event.getMessage());
         }
 
-        final Marker marker = event.getMarker();
-        if (marker != null) {
-            additionalFields.put("marker", marker.getName());
+        if (includeMarker) {
+            final Marker marker = event.getMarker();
+            if (marker != null) {
+                additionalFields.put("marker", marker.getName());
+            }
         }
 
         if (includeLevelName) {
