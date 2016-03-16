@@ -50,7 +50,6 @@ public class GelfUDPAppender extends AbstractGelfAppender {
         this.useCompression = useCompression;
     }
 
-
     @Override
     protected void startAppender() throws IOException {
         channel = DatagramChannel.open();
