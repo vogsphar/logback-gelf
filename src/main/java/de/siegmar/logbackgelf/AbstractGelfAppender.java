@@ -29,8 +29,16 @@ abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingE
 
     private static final int DEFAULT_GELF_PORT = 12201;
 
+    /**
+     * IP or hostname of graylog server.
+     */
     private String graylogHost;
+
+    /**
+     * Port of graylog server. Default: 12201.
+     */
     private int graylogPort = DEFAULT_GELF_PORT;
+
     private GelfLayout layout;
 
     public String getGraylogHost() {
@@ -80,7 +88,8 @@ abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingE
         }
     }
 
-    protected abstract void startAppender() throws IOException;
+    protected void startAppender() throws IOException {
+    }
 
     @SuppressWarnings("checkstyle:illegalcatch")
     @Override

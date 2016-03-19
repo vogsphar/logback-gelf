@@ -80,6 +80,10 @@ class GelfUdpChunker {
      * hostname used together with a timestamp to generate message IDs.
      */
     private final String hostname;
+
+    /**
+     * The maximum size used for the payload.
+     */
     private final int maxChunkPayloadSize;
 
     GelfUdpChunker() {

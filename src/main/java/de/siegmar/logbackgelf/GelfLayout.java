@@ -44,14 +44,50 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
     private static final String DEFAULT_SHORT_PATTERN = "%m%nopex";
     private static final String DEFAULT_FULL_PATTERN = "%m%n";
 
+    /**
+     * Origin hostname - will be auto detected if not specified.
+     */
     private String originHost;
+
+    /**
+     * If true, the raw message (with argument placeholders) will be sent, too. Default: false.
+     */
     private boolean includeRawMessage;
+
+    /**
+     * If true, logback markers will be sent, too. Default: true.
+     */
     private boolean includeMarker = true;
+
+    /**
+     * If true, MDC keys/values will be sent, too. Default: true.
+     */
     private boolean includeMdcData = true;
+
+    /**
+     * If true, caller data (source file-, method-, class name and line) will be sent, too.
+     * Default: false.
+     */
     private boolean includeCallerData;
+
+    /**
+     * If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
+     */
     private boolean includeLevelName;
+
+    /**
+     * Short message format. Default: `"%m%nopex"`.
+     */
     private PatternLayout shortPatternLayout;
+
+    /**
+     * Full message format (Stacktrace). Default: `"%m"`.
+     */
     private PatternLayout fullPatternLayout;
+
+    /**
+     * Additional, static fields to send to graylog. Defaults: none.
+     */
     private Map<String, Object> staticFields = new HashMap<>();
 
     public String getOriginHost() {

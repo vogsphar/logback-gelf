@@ -30,9 +30,19 @@ import java.util.zip.DeflaterOutputStream;
 public class GelfUdpAppender extends AbstractGelfAppender {
 
     private DatagramChannel channel;
+
+    /**
+     * Maximum size of GELF chunks in bytes. Default chunk size is 508 - this prevents
+     * IP packet fragmentation. This is also the recommended minimum.
+     */
     private Integer maxChunkSize;
-    private GelfUdpChunker chunker;
+
+    /**
+     * If true, compression of GELF messages is enabled. Default: true.
+     */
     private boolean useCompression = true;
+
+    private GelfUdpChunker chunker;
 
     public Integer getMaxChunkSize() {
         return maxChunkSize;
