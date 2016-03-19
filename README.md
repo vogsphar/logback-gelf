@@ -1,6 +1,8 @@
 Logback GELF
 ============
 
+[![Build Status](https://api.travis-ci.org/osiegmar/logback-gelf.svg)](https://travis-ci.org/osiegmar/logback-gelf)
+
 Logback appender for sending GELF messages with zero additional dependencies.
 
 
