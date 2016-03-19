@@ -27,11 +27,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class GelfUDPChunkerTest {
+public class GelfUdpChunkerTest {
 
     @Test
     public void singleChunk() {
-        final GelfUDPChunker chunker = new GelfUDPChunker();
+        final GelfUdpChunker chunker = new GelfUdpChunker();
         final Iterator<? extends ByteBuffer> chunks = chunker.chunks("hello".getBytes()).iterator();
         final String actual = new String(chunks.next().array());
         assertEquals("hello", actual);
@@ -40,7 +40,7 @@ public class GelfUDPChunkerTest {
 
     @Test
     public void multipleChunks() {
-        final GelfUDPChunker chunker = new GelfUDPChunker(13);
+        final GelfUdpChunker chunker = new GelfUdpChunker(13);
         final Iterator<? extends ByteBuffer> chunks = chunker.chunks("hello".getBytes()).iterator();
         expectedChunk(chunks.next().array(), 0, 5, 'h');
         expectedChunk(chunks.next().array(), 1, 5, 'e');

@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-class GelfUDPChunker {
+class GelfUdpChunker {
 
     /**
      * Maximum number of chunks, as defined per GELF Format Specification.
@@ -82,11 +82,11 @@ class GelfUDPChunker {
     private final String hostname;
     private final int maxChunkPayloadSize;
 
-    GelfUDPChunker() {
+    GelfUdpChunker() {
         this(null);
     }
 
-    GelfUDPChunker(final Integer maxChunkSize) {
+    GelfUdpChunker(final Integer maxChunkSize) {
         this.hostname = buildHostname();
 
         if (maxChunkSize != null) {

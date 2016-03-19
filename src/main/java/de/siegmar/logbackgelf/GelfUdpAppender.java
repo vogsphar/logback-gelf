@@ -27,11 +27,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.zip.DeflaterOutputStream;
 
-public class GelfUDPAppender extends AbstractGelfAppender {
+public class GelfUdpAppender extends AbstractGelfAppender {
 
     private DatagramChannel channel;
     private Integer maxChunkSize;
-    private GelfUDPChunker chunker;
+    private GelfUdpChunker chunker;
     private boolean useCompression = true;
 
     public Integer getMaxChunkSize() {
@@ -53,7 +53,7 @@ public class GelfUDPAppender extends AbstractGelfAppender {
     @Override
     protected void startAppender() throws IOException {
         channel = DatagramChannel.open();
-        chunker = new GelfUDPChunker(maxChunkSize);
+        chunker = new GelfUdpChunker(maxChunkSize);
     }
 
     @Override

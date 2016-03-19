@@ -41,15 +41,15 @@ import ch.qos.logback.classic.LoggerContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class GelfUDPAppenderTest {
+public class GelfUdpAppenderTest {
 
-    private static final String LOGGER_NAME = GelfUDPAppenderTest.class.getCanonicalName();
+    private static final String LOGGER_NAME = GelfUdpAppenderTest.class.getCanonicalName();
 
-    private UDPServerRunnable server;
+    private UdpServerRunnable server;
 
     @Before
     public void before() throws IOException, InterruptedException {
-        server = new UDPServerRunnable();
+        server = new UdpServerRunnable();
         final Thread serverThread = new Thread(server);
         serverThread.start();
     }
@@ -105,9 +105,9 @@ public class GelfUDPAppenderTest {
         return logger;
     }
 
-    private GelfUDPAppender buildAppender(final boolean useCompression, final LoggerContext lc,
+    private GelfUdpAppender buildAppender(final boolean useCompression, final LoggerContext lc,
                                           final GelfLayout gelfLayout) {
-        final GelfUDPAppender gelfAppender = new GelfUDPAppender();
+        final GelfUdpAppender gelfAppender = new GelfUdpAppender();
         gelfAppender.setContext(lc);
         gelfAppender.setName("GELF");
         gelfAppender.setLayout(gelfLayout);
@@ -133,19 +133,19 @@ public class GelfUDPAppenderTest {
     }
 
     private void stopLogger(final Logger logger) throws IOException {
-        GelfUDPAppender gelfAppender = (GelfUDPAppender) logger.getAppender("GELF");
+        GelfUdpAppender gelfAppender = (GelfUdpAppender) logger.getAppender("GELF");
         gelfAppender.stop();
     }
 
 }
 
-final class UDPServerRunnable implements Runnable {
+final class UdpServerRunnable implements Runnable {
 
     private final DatagramSocket server;
     private byte[] receivedData;
     private Semaphore semaphore = new Semaphore(1);
 
-    UDPServerRunnable() throws IOException, InterruptedException {
+    UdpServerRunnable() throws IOException, InterruptedException {
         server = new DatagramSocket(0);
         semaphore.acquire();
     }

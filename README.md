@@ -30,7 +30,7 @@ Simple:
 ```xml
 <configuration>
 
-    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUDPAppender">
+    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
         <graylogHost>localhost</graylogHost>
         <graylogPort>12201</graylogPort>
     </appender>
@@ -47,7 +47,7 @@ Advanced:
 ```xml
 <configuration>
 
-    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUDPAppender">
+    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
         <graylogHost>localhost</graylogHost>
         <graylogPort>12201</graylogPort>
         <layout class="de.siegmar.logbackgelf.GelfLayout">
@@ -80,7 +80,7 @@ Configuration
 
 ## Appender
 
-`de.siegmar.logbackgelf.GelfUDPAppender`
+`de.siegmar.logbackgelf.GelfUdpAppender`
 
 * **graylogHost**: IP or hostname of graylog server.
 * **graylogPort**: Port of graylog server.
