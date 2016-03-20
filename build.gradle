@@ -6,7 +6,7 @@ apply plugin: 'signing'
 
 group = "de.siegmar"
 archivesBaseName = "logback-gelf"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 
 sourceCompatibility = 1.7
 
@@ -47,47 +47,51 @@ tasks.withType(FindBugs) {
     }
 }
 
-signing {
-    sign configurations.archives
+if (hasProperty('signing.keyId')) {
+    signing {
+        sign configurations.archives
+    }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+if (hasProperty('ossrhUsername')) {
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
 
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
 
-            pom.project {
-                name 'Logback GELF'
-                packaging 'jar'
-                description 'Logback appender for sending GELF messages with zero additional dependencies.'
-                url 'https://github.com/osiegmar/logback-gelf'
-
-                scm {
-                    connection 'scm:git:https://github.com/osiegmar/logback-gelf.git'
-                    developerConnection 'scm:git:https://github.com/osiegmar/logback-gelf.git'
+                pom.project {
+                    name 'Logback GELF'
+                    packaging 'jar'
+                    description 'Logback appender for sending GELF messages with zero additional dependencies.'
                     url 'https://github.com/osiegmar/logback-gelf'
-                }
 
-                licenses {
-                    license {
-                        name 'GNU Lesser General Public License version 2.1'
-                        url 'http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt'
+                    scm {
+                        connection 'scm:git:https://github.com/osiegmar/logback-gelf.git'
+                        developerConnection 'scm:git:https://github.com/osiegmar/logback-gelf.git'
+                        url 'https://github.com/osiegmar/logback-gelf'
                     }
-                }
 
-                developers {
-                    developer {
-                        id 'osiegmar'
-                        name 'Oliver Siegmar'
-                        email 'oliver@siegmar.de'
+                    licenses {
+                        license {
+                            name 'GNU Lesser General Public License version 2.1'
+                            url 'http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'osiegmar'
+                            name 'Oliver Siegmar'
+                            email 'oliver@siegmar.de'
+                        }
                     }
                 }
             }
