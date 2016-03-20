@@ -7,6 +7,30 @@ Logback GELF
 Logback appender for sending GELF messages with zero additional dependencies.
 
 
+Latest release
+--------------
+
+The most recent release is 1.0.0, released March 20, 2016.
+
+To add a dependency using Maven, use the following:
+
+```xml
+<dependency>
+    <groupId>de.siegmar</groupId>
+    <artifactId>logback-gelf</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+To add a dependency using Gradle:
+
+```gradle
+dependencies {
+    compile 'de.siegmar:logback-gelf:1.0.0'
+}
+```
+
+
 Features
 --------
 
