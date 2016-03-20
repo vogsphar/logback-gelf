@@ -127,24 +127,23 @@ public class GelfTcpAppender extends AbstractGelfAppender {
      * @return {@code true} if message was sent successfully, {@code false} otherwise.
      */
     private boolean sendMessage(final byte[] messageToSend) {
-        try {
-            synchronized (lock) {
+        synchronized (lock) {
+            try {
                 if (System.currentTimeMillis() > nextReconnect) {
                     connect();
                 }
 
                 outputStream.write(messageToSend);
+
+                return true;
+            } catch (final IOException e) {
+                addError(String.format("Error sending message via tcp://%s:%s",
+                    getGraylogHost(), getGraylogPort()), e);
+
+                // force reconnect int next loop cycle
+                nextReconnect = 0;
             }
-
-            return true;
-        } catch (final IOException e) {
-            addError(String.format("Error sending message via tcp://%s:%s",
-                getGraylogHost(), getGraylogPort()), e);
-
-            // force reconnect int next loop cycle
-            nextReconnect = 0;
         }
-
         return false;
     }
 
@@ -154,13 +153,8 @@ public class GelfTcpAppender extends AbstractGelfAppender {
      * @throws IOException if the connection failed.
      */
     private void connect() throws IOException {
-        if (outputStream != null) {
-            try {
-                outputStream.close();
-            } catch (final IOException ignored) {
-                // ignore
-            }
-        }
+        closeOut();
+
         final Socket socket = new Socket();
         socket.connect(new InetSocketAddress(getGraylogHost(), getGraylogPort()), connectTimeout);
         socket.shutdownInput();
@@ -171,12 +165,20 @@ public class GelfTcpAppender extends AbstractGelfAppender {
             : System.currentTimeMillis() + (reconnectInterval * SEC_TO_MSEC);
     }
 
+    private void closeOut() {
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+            } catch (final IOException e) {
+                addError("Can't close stream", e);
+            }
+        }
+    }
+
     @Override
     protected void close() throws IOException {
         synchronized (lock) {
-            if (outputStream != null) {
-                outputStream.close();
-            }
+            closeOut();
         }
     }
 
