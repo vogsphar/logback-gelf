@@ -19,6 +19,10 @@
 
 package de.siegmar.logbackgelf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -37,9 +41,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GelfUdpAppenderTest {
 
@@ -68,7 +69,7 @@ public class GelfUdpAppenderTest {
         assertEquals("Test message", jsonNode.get("short_message").textValue());
         assertTrue(jsonNode.get("timestamp").isNumber());
         assertEquals(3, jsonNode.get("level").intValue());
-        assertEquals("main", jsonNode.get("_thread_name").textValue());
+        assertNotNull(jsonNode.get("_thread_name").textValue());
         assertEquals(LOGGER_NAME, jsonNode.get("_logger_name").textValue());
     }
 
@@ -86,7 +87,7 @@ public class GelfUdpAppenderTest {
         assertEquals("Test message", jsonNode.get("short_message").textValue());
         assertTrue(jsonNode.get("timestamp").isNumber());
         assertEquals(3, jsonNode.get("level").intValue());
-        assertEquals("main", jsonNode.get("_thread_name").textValue());
+        assertNotNull(jsonNode.get("_thread_name").textValue());
         assertEquals(LOGGER_NAME, jsonNode.get("_logger_name").textValue());
     }
 
@@ -133,51 +134,51 @@ public class GelfUdpAppenderTest {
     }
 
     private void stopLogger(final Logger logger) throws IOException {
-        GelfUdpAppender gelfAppender = (GelfUdpAppender) logger.getAppender("GELF");
+        final GelfUdpAppender gelfAppender = (GelfUdpAppender) logger.getAppender("GELF");
         gelfAppender.stop();
     }
 
-}
+    private static final class UdpServerRunnable implements Runnable {
 
-final class UdpServerRunnable implements Runnable {
+        private final DatagramSocket server;
+        private final Semaphore semaphore = new Semaphore(1);
+        private byte[] receivedData;
 
-    private final DatagramSocket server;
-    private byte[] receivedData;
-    private Semaphore semaphore = new Semaphore(1);
+        UdpServerRunnable() throws IOException, InterruptedException {
+            server = new DatagramSocket(0);
+            semaphore.acquire();
+        }
 
-    UdpServerRunnable() throws IOException, InterruptedException {
-        server = new DatagramSocket(0);
-        semaphore.acquire();
-    }
+        int getPort() {
+            return server.getLocalPort();
+        }
 
-    int getPort() {
-        return server.getLocalPort();
-    }
-
-    byte[] getReceivedData() {
-        try {
-            if (!semaphore.tryAcquire(10, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("Couldn't acquire semaphore!");
+        byte[] getReceivedData() {
+            try {
+                if (!semaphore.tryAcquire(10, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("Couldn't acquire semaphore!");
+                }
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
             }
-        } catch (InterruptedException e) {
-            throw new IllegalStateException(e);
+            return receivedData;
         }
-        return receivedData;
-    }
 
-    @Override
-    public void run() {
-        byte[] receiveData = new byte[1024];
-        final DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
-        try {
-            server.receive(packet);
-        } catch (final IOException e) {
-            throw new IllegalStateException(e);
-        } finally {
-            server.close();
+        @Override
+        public void run() {
+            final byte[] receiveData = new byte[1024];
+            final DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
+            try {
+                server.receive(packet);
+            } catch (final IOException e) {
+                throw new IllegalStateException(e);
+            } finally {
+                server.close();
+            }
+            receivedData = Arrays.copyOf(packet.getData(), packet.getLength());
+            semaphore.release();
         }
-        receivedData = Arrays.copyOf(packet.getData(), packet.getLength());
-        semaphore.release();
+
     }
 
 }

@@ -19,6 +19,10 @@
 
 package de.siegmar.logbackgelf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -36,9 +40,6 @@ import com.google.common.io.ByteStreams;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GelfTcpAppenderTest {
 
@@ -67,7 +68,7 @@ public class GelfTcpAppenderTest {
         assertEquals("Test message", jsonNode.get("short_message").textValue());
         assertTrue(jsonNode.get("timestamp").isNumber());
         assertEquals(3, jsonNode.get("level").intValue());
-        assertEquals("main", jsonNode.get("_thread_name").textValue());
+        assertNotNull(jsonNode.get("_thread_name").textValue());
         assertEquals(LOGGER_NAME, jsonNode.get("_logger_name").textValue());
     }
 
@@ -102,55 +103,55 @@ public class GelfTcpAppenderTest {
     }
 
     private void stopLogger(final Logger logger) throws IOException {
-        GelfTcpAppender gelfAppender = (GelfTcpAppender) logger.getAppender("GELF");
+        final GelfTcpAppender gelfAppender = (GelfTcpAppender) logger.getAppender("GELF");
         gelfAppender.stop();
     }
 
-}
+    private static final class TcpServerRunnable implements Runnable {
 
-final class TcpServerRunnable implements Runnable {
+        private final ServerSocket server;
+        private final Semaphore semaphore = new Semaphore(1);
+        private byte[] receivedData;
 
-    private final ServerSocket server;
-    private byte[] receivedData;
-    private Semaphore semaphore = new Semaphore(1);
+        TcpServerRunnable() throws IOException, InterruptedException {
+            server = new ServerSocket(0);
+            semaphore.acquire();
+        }
 
-    TcpServerRunnable() throws IOException, InterruptedException {
-        server = new ServerSocket(0);
-        semaphore.acquire();
-    }
+        int getPort() {
+            return server.getLocalPort();
+        }
 
-    int getPort() {
-        return server.getLocalPort();
-    }
-
-    byte[] getReceivedData() {
-        try {
-            if (!semaphore.tryAcquire(10, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("Couldn't acquire semaphore!");
+        byte[] getReceivedData() {
+            try {
+                if (!semaphore.tryAcquire(10, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("Couldn't acquire semaphore!");
+                }
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
             }
-        } catch (InterruptedException e) {
-            throw new IllegalStateException(e);
+            return receivedData;
         }
-        return receivedData;
-    }
 
-    @Override
-    public void run() {
-        try (final Socket socket = server.accept()) {
-            try (final DataInputStream in = new DataInputStream(socket.getInputStream())) {
-                receivedData = ByteStreams.toByteArray(in);
+        @Override
+        public void run() {
+            try (final Socket socket = server.accept()) {
+                try (final DataInputStream in = new DataInputStream(socket.getInputStream())) {
+                    receivedData = ByteStreams.toByteArray(in);
+                }
+            } catch (final IOException e) {
+                throw new IllegalStateException(e);
             }
-        } catch (final IOException e) {
-            throw new IllegalStateException(e);
+
+            try {
+                server.close();
+            } catch (final IOException e) {
+                throw new IllegalStateException(e);
+            }
+
+            semaphore.release();
         }
 
-        try {
-            server.close();
-        } catch (final IOException e) {
-            throw new IllegalStateException(e);
-        }
-
-        semaphore.release();
     }
 
 }

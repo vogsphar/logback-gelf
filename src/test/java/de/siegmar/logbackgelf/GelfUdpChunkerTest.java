@@ -19,21 +19,23 @@
 
 package de.siegmar.logbackgelf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class GelfUdpChunkerTest {
 
     @Test
     public void singleChunk() {
         final GelfUdpChunker chunker = new GelfUdpChunker();
-        final Iterator<? extends ByteBuffer> chunks = chunker.chunks("hello".getBytes()).iterator();
-        final String actual = new String(chunks.next().array());
+        final Iterator<? extends ByteBuffer> chunks =
+            chunker.chunks("hello".getBytes(StandardCharsets.UTF_8)).iterator();
+        final String actual = new String(chunks.next().array(), StandardCharsets.UTF_8);
         assertEquals("hello", actual);
         assertFalse(chunks.hasNext());
     }
@@ -41,7 +43,8 @@ public class GelfUdpChunkerTest {
     @Test
     public void multipleChunks() {
         final GelfUdpChunker chunker = new GelfUdpChunker(13);
-        final Iterator<? extends ByteBuffer> chunks = chunker.chunks("hello".getBytes()).iterator();
+        final Iterator<? extends ByteBuffer> chunks =
+            chunker.chunks("hello".getBytes(StandardCharsets.UTF_8)).iterator();
         expectedChunk(chunks.next().array(), 0, 5, 'h');
         expectedChunk(chunks.next().array(), 1, 5, 'e');
         expectedChunk(chunks.next().array(), 2, 5, 'l');

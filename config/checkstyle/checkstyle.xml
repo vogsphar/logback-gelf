@@ -51,19 +51,20 @@
     </module>
 
     <module name="SuppressionFilter">
-        <property name="file" value="${checkstyle.suppressions.file}"/>
+        <property name="file" value="${samedir}/suppressions.xml"/>
     </module>
 
     <module name="SuppressWarningsFilter"/>
 
     <!-- Checks for Header - http://checkstyle.sf.net/config_header.html -->
     <module name="Header">
-        <property name="headerFile" value="${checkstyle.header.file}"/>
+        <property name="headerFile" value="${samedir}/java.header"/>
         <property name="fileExtensions" value="java"/>
     </module>
 
     <module name="TreeWalker">
 
+        <property name="cacheFile" value="${project_loc}/build/checkstyle-cachefile"/>
         <property name="tabWidth" value="4"/>
 
         <!-- Checks for Annotations - See http://checkstyle.sf.net/config_annotation.html -->
@@ -181,7 +182,7 @@
             <property name="option" value="top"/>
         </module>
         <module name="ImportControl">
-            <property name="file" value="config/checkstyle/import-control.xml"/>
+            <property name="file" value="${samedir}/import-control.xml"/>
         </module>
         <!--<module name="CustomImportOrder"/>-->
 

@@ -19,6 +19,10 @@
 
 package de.siegmar.logbackgelf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -36,9 +40,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.ContextBase;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GelfLayoutTest {
 
@@ -82,7 +83,7 @@ public class GelfLayoutTest {
         assertEquals("localhost", jsonNode.get("host").textValue());
         assertEquals("message 1", jsonNode.get("short_message").textValue());
         assertEquals(7, jsonNode.get("level").intValue());
-        assertEquals("main", jsonNode.get("_thread_name").textValue());
+        assertNotNull(jsonNode.get("_thread_name").textValue());
         assertEquals(LOGGER_NAME, jsonNode.get("_logger_name").textValue());
     }
 
@@ -116,9 +117,10 @@ public class GelfLayoutTest {
 
         assertEquals("message 1", msg.readLine());
         assertEquals("java.lang.IllegalArgumentException: Example Exception", msg.readLine());
-        assertTrue(msg.readLine().matches(
+        final String line = msg.readLine();
+        assertTrue("Unexpected line: " + line, line.matches(
             "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
-                + "~\\[test-classes/:na\\]$"));
+                + "~\\[test/:na\\]$"));
     }
 
     @Test

@@ -19,13 +19,13 @@
 
 package de.siegmar.logbackgelf;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
-
-import static org.junit.Assert.assertEquals;
 
 public class GelfMessageTest {
 
