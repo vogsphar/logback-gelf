@@ -2,6 +2,7 @@ Logback GELF
 ============
 
 [![Build Status](https://api.travis-ci.org/osiegmar/logback-gelf.svg)](https://travis-ci.org/osiegmar/logback-gelf)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.siegmar/logback-gelf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.siegmar/logback-gelf)
 
 Logback appender for sending GELF messages with zero additional dependencies.
 
