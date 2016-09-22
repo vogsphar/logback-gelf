@@ -74,15 +74,15 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
     private boolean includeCallerData;
 
     /**
-     * If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
-     */
-    private boolean includeLevelName;
-
-    /**
      * If true, root cause exception of the exception passed with the log message will be
      * exposed in the exception field. Default: false
      */
     private boolean includeRootException;
+
+    /**
+     * If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
+     */
+    private boolean includeLevelName;
 
     /**
      * Short message format. Default: `"%m%nopex"`.
@@ -139,20 +139,20 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         this.includeCallerData = includeCallerData;
     }
 
-    public boolean isIncludeLevelName() {
-        return includeLevelName;
-    }
-
-    public void setIncludeLevelName(final boolean includeLevelName) {
-        this.includeLevelName = includeLevelName;
-    }
-
     public boolean isIncludeRootException() {
         return includeRootException;
     }
 
     public void setIncludeRootException(final boolean includeRootException) {
         this.includeRootException = includeRootException;
+    }
+
+    public boolean isIncludeLevelName() {
+        return includeLevelName;
+    }
+
+    public void setIncludeLevelName(final boolean includeLevelName) {
+        this.includeLevelName = includeLevelName;
     }
 
     public PatternLayout getShortPatternLayout() {
@@ -235,38 +235,6 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         return patternLayout;
     }
 
-    private Map<String, Object> buildCallerData(final StackTraceElement[] callerData) {
-        if (callerData != null && callerData.length > 0) {
-            final StackTraceElement first = callerData[0];
-
-            final Map<String, Object> callerDataMap = new HashMap<>(4);
-            callerDataMap.put("source_file_name", first.getFileName());
-            callerDataMap.put("source_method_name", first.getMethodName());
-            callerDataMap.put("source_class_name", first.getClassName());
-            callerDataMap.put("source_line_number", first.getLineNumber());
-
-            return callerDataMap;
-        }
-
-        return Collections.emptyMap();
-    }
-
-    private Map<String, Object> buildRootException(final IThrowableProxy throwableProxy) {
-        if (throwableProxy != null) {
-            IThrowableProxy causeProxy = throwableProxy;
-            while (causeProxy.getCause() != null) {
-                causeProxy = throwableProxy.getCause();
-            }
-
-            if (causeProxy.getClassName() != null && causeProxy.getClassName().length() > 0) {
-                return Collections.<String, Object>singletonMap(
-                        "exception", causeProxy.getClassName());
-            }
-        }
-
-        return Collections.emptyMap();
-    }
-
     @Override
     public String doLayout(final ILoggingEvent event) {
         final String shortMessage = shortPatternLayout.doLayout(event);
@@ -302,22 +270,63 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             additionalFields.put("level_name", event.getLevel().levelStr);
         }
 
+        if (includeMdcData) {
+            additionalFields.putAll(buildMdcData(event.getMDCPropertyMap()));
+        }
+
         if (includeCallerData) {
             additionalFields.putAll(buildCallerData(event.getCallerData()));
         }
 
-        if (includeMdcData) {
-            for (Map.Entry<String, String> entry : event.getMDCPropertyMap().entrySet()) {
-                addField(additionalFields, entry.getKey(), entry.getValue());
-            }
-        }
-
         if (includeRootException) {
-            additionalFields.putAll(buildRootException(event.getThrowableProxy()));
-
+            additionalFields.put("exception", buildRootException(event.getThrowableProxy()));
         }
 
         return additionalFields;
+    }
+
+    private Map<String, Object> buildMdcData(final Map<String, String> mdcProperties) {
+        if (mdcProperties == null || mdcProperties.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        final Map<String, Object> additionalFields = new HashMap<>();
+        for (final Map.Entry<String, String> entry : mdcProperties.entrySet()) {
+            addField(additionalFields, entry.getKey(), entry.getValue());
+        }
+
+        return additionalFields;
+    }
+
+    private Map<String, Object> buildCallerData(final StackTraceElement[] callerData) {
+        if (callerData == null || callerData.length == 0) {
+            return Collections.emptyMap();
+        }
+
+        final StackTraceElement first = callerData[0];
+
+        final Map<String, Object> callerDataMap = new HashMap<>(4);
+        callerDataMap.put("source_file_name", first.getFileName());
+        callerDataMap.put("source_method_name", first.getMethodName());
+        callerDataMap.put("source_class_name", first.getClassName());
+        callerDataMap.put("source_line_number", first.getLineNumber());
+
+        return callerDataMap;
+    }
+
+    private String buildRootException(final IThrowableProxy throwableProxy) {
+        if (throwableProxy != null) {
+            IThrowableProxy rootCause = throwableProxy;
+            while (rootCause.getCause() != null) {
+                rootCause = throwableProxy.getCause();
+            }
+
+            if (rootCause.getClassName() != null && !rootCause.getClassName().isEmpty()) {
+                return rootCause.getClassName();
+            }
+        }
+
+        return null;
     }
 
 }
