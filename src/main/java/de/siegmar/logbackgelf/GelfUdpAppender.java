@@ -82,7 +82,7 @@ public class GelfUdpAppender extends AbstractGelfAppender {
     private static byte[] compress(final byte[] binMessage) {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream(binMessage.length);
         try {
-            try (final OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
+            try (OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
                 deflaterOut.write(binMessage);
             }
         } catch (final IOException e) {

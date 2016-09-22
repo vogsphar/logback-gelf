@@ -21,18 +21,20 @@ package de.siegmar.logbackgelf;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import ch.qos.logback.classic.spi.IThrowableProxy;
 import org.slf4j.Marker;
 
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.util.LevelToSyslogSeverity;
 import ch.qos.logback.core.LayoutBase;
+
 
 /**
  * This class is responsible for transforming a Logback log event to a GELF message.
@@ -77,10 +79,10 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
     private boolean includeLevelName;
 
     /**
-     * If true, root cause exception of the exception passed with the log message will be exposed in the
-     * log message. Default: false
+     * If true, root cause exception of the exception passed with the log message will be
+     * exposed in the exception field. Default: false
      */
-    private boolean includeRootException = false;
+    private boolean includeRootException;
 
     /**
      * Short message format. Default: `"%m%nopex"`.
@@ -149,7 +151,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         return includeRootException;
     }
 
-    public void setIncludeRootException(boolean includeRootException) {
+    public void setIncludeRootException(final boolean includeRootException) {
         this.includeRootException = includeRootException;
     }
 
@@ -233,13 +235,36 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         return patternLayout;
     }
 
-    private String buildRootException(final ILoggingEvent event) {
-        IThrowableProxy throwableProxy = event.getThrowableProxy();
-        while (throwableProxy != null && throwableProxy.getCause() != null) {
-            throwableProxy = throwableProxy.getCause();
+    private Map<String, Object> buildCallerData(final StackTraceElement[] callerData) {
+        if (callerData != null && callerData.length > 0) {
+            final StackTraceElement first = callerData[0];
+
+            final Map<String, Object> callerDataMap = new HashMap<>(4);
+            callerDataMap.put("source_file_name", first.getFileName());
+            callerDataMap.put("source_method_name", first.getMethodName());
+            callerDataMap.put("source_class_name", first.getClassName());
+            callerDataMap.put("source_line_number", first.getLineNumber());
+
+            return callerDataMap;
         }
 
-        return throwableProxy != null ? throwableProxy.getClassName() : null;
+        return Collections.emptyMap();
+    }
+
+    private Map<String, Object> buildRootException(final IThrowableProxy throwableProxy) {
+        if (throwableProxy != null) {
+            IThrowableProxy causeProxy = throwableProxy;
+            while (causeProxy.getCause() != null) {
+                causeProxy = throwableProxy.getCause();
+            }
+
+            if (causeProxy.getClassName() != null && causeProxy.getClassName().length() > 0) {
+                return Collections.<String, Object>singletonMap(
+                        "exception", causeProxy.getClassName());
+            }
+        }
+
+        return Collections.emptyMap();
     }
 
     @Override
@@ -278,16 +303,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         }
 
         if (includeCallerData) {
-            final StackTraceElement[] callerData = event.getCallerData();
-
-            if (callerData != null && callerData.length > 0) {
-                final StackTraceElement first = callerData[0];
-
-                additionalFields.put("source_file_name", first.getFileName());
-                additionalFields.put("source_method_name", first.getMethodName());
-                additionalFields.put("source_class_name", first.getClassName());
-                additionalFields.put("source_line_number", first.getLineNumber());
-            }
+            additionalFields.putAll(buildCallerData(event.getCallerData()));
         }
 
         if (includeMdcData) {
@@ -296,8 +312,9 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             }
         }
 
-        if (includeRootException && buildRootException(event) != null) {
-            additionalFields.put("exception", buildRootException(event));
+        if (includeRootException) {
+            additionalFields.putAll(buildRootException(event.getThrowableProxy()));
+
         }
 
         return additionalFields;

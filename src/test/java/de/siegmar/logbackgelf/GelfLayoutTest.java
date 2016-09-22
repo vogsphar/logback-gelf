@@ -198,7 +198,7 @@ public class GelfLayoutTest {
                 "message {}",
                 null,
                 new Object[]{1})
-        );;
+        );
 
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
@@ -244,7 +244,8 @@ public class GelfLayoutTest {
 
         final String logMsg;
         try {
-            throw new IOException("Example Exception", new IllegalStateException("Example Exception 2"));
+            throw new IOException("Example Exception",
+                    new IllegalStateException("Example Exception 2"));
         } catch (final IOException e) {
             logMsg = layout.doLayout(new LoggingEvent(
                     LOGGER_NAME,
@@ -259,9 +260,6 @@ public class GelfLayoutTest {
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
-
-        final LineReader msg =
-                new LineReader(new StringReader(jsonNode.get("full_message").textValue()));
 
         assertEquals("java.lang.IllegalStateException", jsonNode.get("_exception").textValue());
 
