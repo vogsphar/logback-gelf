@@ -279,7 +279,10 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         }
 
         if (includeRootException) {
-            additionalFields.put("exception", buildRootException(event.getThrowableProxy()));
+            final String rootException = buildRootException(event.getThrowableProxy());
+            if (rootException != null) {
+                additionalFields.put("exception", rootException);
+            }
         }
 
         return additionalFields;
