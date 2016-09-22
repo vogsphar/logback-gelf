@@ -108,6 +108,7 @@ Advanced UDP configuration:
             <includeMarker>true</includeMarker>
             <includeMdcData>true</includeMdcData>
             <includeCallerData>false</includeCallerData>
+            <includeRootException>false</includeRootException>
             <includeLevelName>false</includeLevelName>
             <shortPatternLayout class="ch.qos.logback.classic.PatternLayout">
                 <pattern>%m%nopex</pattern>
@@ -147,6 +148,7 @@ Advanced TCP configuration:
             <includeMarker>true</includeMarker>
             <includeMdcData>true</includeMdcData>
             <includeCallerData>false</includeCallerData>
+            <includeRootException>false</includeRootException>
             <includeLevelName>false</includeLevelName>
             <shortPatternLayout class="ch.qos.logback.classic.PatternLayout">
                 <pattern>%m%nopex</pattern>
@@ -213,6 +215,8 @@ Configuration
 * **includeMdcData**: If true, MDC keys/values will be sent, too. Default: true.
 * **includeCallerData**: If true, caller data (source file-, method-, class name and line) will be 
   sent, too. Default: false.
+* **includeRootException**: If true, root cause exception of the exception passed with the log
+   message will be exposed in the exception field. Default: false.
 * **includeLevelName**: If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
 * **shortPatternLayout**: Short message format. Default: `"%m%nopex"`. 
 * **fullPatternLayout**: Full message format (Stacktrace). Default: `"%m"`.
