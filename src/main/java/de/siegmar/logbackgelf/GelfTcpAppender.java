@@ -116,7 +116,8 @@ public class GelfTcpAppender extends AbstractGelfAppender {
                     break;
                 }
             }
-        } while (openRetries-- > 0 && isStarted());
+        }
+        while (openRetries-- > 0 && isStarted());
     }
 
     /**

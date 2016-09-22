@@ -20,6 +20,7 @@
 package de.siegmar.logbackgelf;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -153,6 +154,115 @@ public class GelfLayoutTest {
         assertEquals("bar", jsonNode.get("_foo").textValue());
         assertEquals("mdc_value", jsonNode.get("_mdc_key").textValue());
         assertEquals("message {}", jsonNode.get("_raw_message").textValue());
+    }
+
+    @Test
+    public void rootExceptionTurnedOff() throws IOException {
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg;
+        try {
+            throw new IOException("Example Exception");
+        } catch (final IOException e) {
+            logMsg = layout.doLayout(new LoggingEvent(
+                    LOGGER_NAME,
+                    logger,
+                    Level.DEBUG,
+                    "message {}",
+                    e,
+                    new Object[]{1})
+            );
+        }
+
+        final ObjectMapper om = new ObjectMapper();
+        final JsonNode jsonNode = om.readTree(logMsg);
+
+        assertFalse(jsonNode.has("_exception"));
+    }
+
+    @Test
+    public void noRootException() throws IOException {
+        layout.setIncludeRootException(true);
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg = layout.doLayout(new LoggingEvent(
+                LOGGER_NAME,
+                logger,
+                Level.DEBUG,
+                "message {}",
+                null,
+                new Object[]{1})
+        );
+
+        final ObjectMapper om = new ObjectMapper();
+        final JsonNode jsonNode = om.readTree(logMsg);
+
+        assertFalse(jsonNode.has("_exception"));
+    }
+
+    @Test
+    public void rootExceptionWithoutCause() throws IOException {
+        layout.setIncludeRootException(true);
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg;
+        try {
+            throw new IOException("Example Exception");
+        } catch (final IOException e) {
+            logMsg = layout.doLayout(new LoggingEvent(
+                    LOGGER_NAME,
+                    logger,
+                    Level.DEBUG,
+                    "message {}",
+                    e,
+                    new Object[]{1})
+            );
+        }
+
+        final ObjectMapper om = new ObjectMapper();
+        final JsonNode jsonNode = om.readTree(logMsg);
+
+        assertEquals("java.io.IOException", jsonNode.get("_exception").textValue());
+    }
+
+    @Test
+    public void rootExceptionWithCause() throws IOException {
+        layout.setIncludeRootException(true);
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg;
+        try {
+            throw new IOException("Example Exception",
+                    new IllegalStateException("Example Exception 2"));
+        } catch (final IOException e) {
+            logMsg = layout.doLayout(new LoggingEvent(
+                    LOGGER_NAME,
+                    logger,
+                    Level.DEBUG,
+                    "message {}",
+                    e,
+                    new Object[]{1})
+            );
+        }
+
+        final ObjectMapper om = new ObjectMapper();
+        final JsonNode jsonNode = om.readTree(logMsg);
+        basicValidation(jsonNode);
+
+        assertEquals("java.lang.IllegalStateException", jsonNode.get("_exception").textValue());
+
     }
 
 }

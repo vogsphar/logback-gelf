@@ -105,7 +105,7 @@ abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingE
         }
     }
 
-    protected abstract void appendMessage(final byte[] messageToSend) throws IOException;
+    protected abstract void appendMessage(byte[] messageToSend) throws IOException;
 
     @Override
     public void stop() {
