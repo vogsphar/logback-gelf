@@ -41,6 +41,7 @@ Features
 - Forwarding of MDC (Mapped Diagnostic Context)
 - Forwarding of caller data
 - Forwarding of static fields
+- Forwarding of exception root cause
 - No runtime dependencies beside Logback
 
 
