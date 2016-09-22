@@ -41,7 +41,7 @@ import ch.qos.logback.core.LayoutBase;
  */
 public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
-    private static final Pattern VALID_ADDITIONAL_FIELD_PATTERN = Pattern.compile("^[\\w\\.\\-]*$");
+    private static final Pattern VALID_ADDITIONAL_FIELD_PATTERN = Pattern.compile("^[\\w.-]*$");
     private static final double MSEC_DIVIDER = 1000D;
 
     private static final String DEFAULT_SHORT_PATTERN = "%m%nopex";
@@ -197,7 +197,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             addWarn("additional field with key '" + key + "' is already set");
         } else if (!VALID_ADDITIONAL_FIELD_PATTERN.matcher(key).matches()) {
             addWarn("staticField key '" + key + "' is illegal. "
-                + "Keys must apply to regex ^[\\w\\.\\-]*$");
+                + "Keys must apply to regex ^[\\w.-]*$");
         } else {
             dst.put(key, value);
         }
