@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import ch.qos.logback.classic.spi.IThrowableProxy;
 import org.slf4j.Marker;
 
 import ch.qos.logback.classic.PatternLayout;
@@ -74,6 +75,12 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
      * If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
      */
     private boolean includeLevelName;
+
+    /**
+     * If true, root cause exception of the exception passed with the log message will be exposed in the
+     * log message. Default: false
+     */
+    private boolean includeRootException = false;
 
     /**
      * Short message format. Default: `"%m%nopex"`.
@@ -136,6 +143,14 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
     public void setIncludeLevelName(final boolean includeLevelName) {
         this.includeLevelName = includeLevelName;
+    }
+
+    public boolean isIncludeRootException() {
+        return includeRootException;
+    }
+
+    public void setIncludeRootException(boolean includeRootException) {
+        this.includeRootException = includeRootException;
     }
 
     public PatternLayout getShortPatternLayout() {
@@ -218,6 +233,15 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         return patternLayout;
     }
 
+    private String buildRootException(final ILoggingEvent event) {
+        IThrowableProxy throwableProxy = event.getThrowableProxy();
+        while (throwableProxy != null && throwableProxy.getCause() != null) {
+            throwableProxy = throwableProxy.getCause();
+        }
+
+        return throwableProxy != null ? throwableProxy.getClassName() : null;
+    }
+
     @Override
     public String doLayout(final ILoggingEvent event) {
         final String shortMessage = shortPatternLayout.doLayout(event);
@@ -270,6 +294,10 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             for (Map.Entry<String, String> entry : event.getMDCPropertyMap().entrySet()) {
                 addField(additionalFields, entry.getKey(), entry.getValue());
             }
+        }
+
+        if (includeRootException && buildRootException(event) != null) {
+            additionalFields.put("exception", buildRootException(event));
         }
 
         return additionalFields;
