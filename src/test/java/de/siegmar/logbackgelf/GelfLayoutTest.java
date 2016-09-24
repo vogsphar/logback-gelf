@@ -22,6 +22,7 @@ package de.siegmar.logbackgelf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -61,14 +62,7 @@ public class GelfLayoutTest {
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         final Logger logger = lc.getLogger(LOGGER_NAME);
 
-        final String logMsg = layout.doLayout(new LoggingEvent(
-            LOGGER_NAME,
-            logger,
-            Level.DEBUG,
-            "message {}",
-            null,
-            new Object[]{1})
-        );
+        final String logMsg = layout.doLayout(simpleLoggingEvent(logger, null));
 
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
@@ -77,6 +71,16 @@ public class GelfLayoutTest {
         final LineReader msg =
             new LineReader(new StringReader(jsonNode.get("full_message").textValue()));
         assertEquals("message 1", msg.readLine());
+    }
+
+    private LoggingEvent simpleLoggingEvent(final Logger logger, final Throwable e) {
+        return new LoggingEvent(
+            LOGGER_NAME,
+            logger,
+            Level.DEBUG,
+            "message {}",
+            e,
+            new Object[]{1});
     }
 
     private void basicValidation(final JsonNode jsonNode) {
@@ -105,8 +109,7 @@ public class GelfLayoutTest {
                 Level.DEBUG,
                 "message {}",
                 e,
-                new Object[]{1})
-            );
+                new Object[]{1}));
         }
 
         final ObjectMapper om = new ObjectMapper();
@@ -130,18 +133,13 @@ public class GelfLayoutTest {
         layout.setIncludeLevelName(true);
         layout.addStaticField("foo:bar");
         layout.setIncludeCallerData(true);
+        layout.setIncludeRootException(true);
         layout.start();
 
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         final Logger logger = lc.getLogger(LOGGER_NAME);
 
-        final LoggingEvent event = new LoggingEvent(
-            LOGGER_NAME,
-            logger,
-            Level.DEBUG,
-            "message {}",
-            null,
-            new Object[]{1});
+        final LoggingEvent event = simpleLoggingEvent(logger, null);
 
         event.setMDCPropertyMap(ImmutableMap.of("mdc_key", "mdc_value"));
 
@@ -154,6 +152,7 @@ public class GelfLayoutTest {
         assertEquals("bar", jsonNode.get("_foo").textValue());
         assertEquals("mdc_value", jsonNode.get("_mdc_key").textValue());
         assertEquals("message {}", jsonNode.get("_raw_message").textValue());
+        assertNull(jsonNode.get("_exception"));
     }
 
     @Test
@@ -167,14 +166,7 @@ public class GelfLayoutTest {
         try {
             throw new IOException("Example Exception");
         } catch (final IOException e) {
-            logMsg = layout.doLayout(new LoggingEvent(
-                    LOGGER_NAME,
-                    logger,
-                    Level.DEBUG,
-                    "message {}",
-                    e,
-                    new Object[]{1})
-            );
+            logMsg = layout.doLayout(simpleLoggingEvent(logger, e));
         }
 
         final ObjectMapper om = new ObjectMapper();
@@ -191,14 +183,7 @@ public class GelfLayoutTest {
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         final Logger logger = lc.getLogger(LOGGER_NAME);
 
-        final String logMsg = layout.doLayout(new LoggingEvent(
-                LOGGER_NAME,
-                logger,
-                Level.DEBUG,
-                "message {}",
-                null,
-                new Object[]{1})
-        );
+        final String logMsg = layout.doLayout(simpleLoggingEvent(logger, null));
 
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
@@ -218,14 +203,7 @@ public class GelfLayoutTest {
         try {
             throw new IOException("Example Exception");
         } catch (final IOException e) {
-            logMsg = layout.doLayout(new LoggingEvent(
-                    LOGGER_NAME,
-                    logger,
-                    Level.DEBUG,
-                    "message {}",
-                    e,
-                    new Object[]{1})
-            );
+            logMsg = layout.doLayout(simpleLoggingEvent(logger, e));
         }
 
         final ObjectMapper om = new ObjectMapper();
@@ -245,16 +223,9 @@ public class GelfLayoutTest {
         final String logMsg;
         try {
             throw new IOException("Example Exception",
-                    new IllegalStateException("Example Exception 2"));
+                new IllegalStateException("Example Exception 2"));
         } catch (final IOException e) {
-            logMsg = layout.doLayout(new LoggingEvent(
-                    LOGGER_NAME,
-                    logger,
-                    Level.DEBUG,
-                    "message {}",
-                    e,
-                    new Object[]{1})
-            );
+            logMsg = layout.doLayout(simpleLoggingEvent(logger, e));
         }
 
         final ObjectMapper om = new ObjectMapper();
@@ -262,7 +233,6 @@ public class GelfLayoutTest {
         basicValidation(jsonNode);
 
         assertEquals("java.lang.IllegalStateException", jsonNode.get("_exception").textValue());
-
     }
 
 }
