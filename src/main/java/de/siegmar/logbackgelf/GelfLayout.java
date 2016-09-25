@@ -75,7 +75,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
     /**
      * If true, root cause exception of the exception passed with the log message will be
-     * exposed in the exception field. Default: false
+     * exposed in the exception field. Default: false.
      */
     private boolean includeRootException;
 
