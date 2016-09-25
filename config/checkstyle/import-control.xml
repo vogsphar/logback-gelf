@@ -9,6 +9,8 @@
     <allow pkg="java.text"/>
     <allow pkg="java.util"/>
 
+    <allow pkg="javax.net.ssl"/>
+
     <allow pkg="ch.qos.logback"/>
 
     <allow pkg="org.slf4j"/>

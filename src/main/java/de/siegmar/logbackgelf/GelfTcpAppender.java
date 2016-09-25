@@ -155,14 +155,20 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     private void connect() throws IOException {
         closeOut();
 
-        final Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(getGraylogHost(), getGraylogPort()), connectTimeout);
-        socket.shutdownInput();
+        final Socket socket = getSocket();
         outputStream = socket.getOutputStream();
 
         nextReconnect = reconnectInterval < 0
             ? Long.MAX_VALUE
             : System.currentTimeMillis() + (reconnectInterval * SEC_TO_MSEC);
+    }
+
+    protected Socket getSocket() throws IOException {
+        final Socket socket = new Socket();
+        socket.connect(new InetSocketAddress(getGraylogHost(), getGraylogPort()), connectTimeout);
+        socket.shutdownInput();
+
+        return socket;
     }
 
     private void closeOut() {
