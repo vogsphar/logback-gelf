@@ -279,10 +279,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         }
 
         if (includeRootException) {
-            final String rootException = buildRootException(event.getThrowableProxy());
-            if (rootException != null) {
-                additionalFields.put("exception", rootException);
-            }
+            additionalFields.putAll(buildRootExceptionData(event.getThrowableProxy()));
         }
 
         return additionalFields;
@@ -317,19 +314,30 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         return callerDataMap;
     }
 
-    private String buildRootException(final IThrowableProxy throwableProxy) {
-        if (throwableProxy != null) {
-            IThrowableProxy rootCause = throwableProxy;
-            while (rootCause.getCause() != null) {
-                rootCause = throwableProxy.getCause();
-            }
-
-            if (rootCause.getClassName() != null && !rootCause.getClassName().isEmpty()) {
-                return rootCause.getClassName();
-            }
+    private Map<String, Object> buildRootExceptionData(final IThrowableProxy throwableProxy) {
+        final IThrowableProxy rootException = getRootException(throwableProxy);
+        if (rootException == null) {
+            return Collections.emptyMap();
         }
 
-        return null;
+        final Map<String, Object> exceptionDataMap = new HashMap<>(2);
+        exceptionDataMap.put("root_exception_class_name", rootException.getClassName());
+        exceptionDataMap.put("root_exception_message", rootException.getMessage());
+
+        return exceptionDataMap;
+    }
+
+    private IThrowableProxy getRootException(final IThrowableProxy throwableProxy) {
+        if (throwableProxy == null) {
+            return null;
+        }
+
+        IThrowableProxy rootCause = throwableProxy;
+        while (rootCause.getCause() != null) {
+            rootCause = throwableProxy.getCause();
+        }
+
+        return rootCause;
     }
 
 }

@@ -286,7 +286,8 @@ Configuration
 * **includeCallerData**: If true, caller data (source file-, method-, class name and line) will be
   sent, too. Default: false.
 * **includeRootException**: If true, root cause exception of the exception passed with the log
-   message will be exposed in the exception field. Default: false.
+   message will be exposed in the root_exception_class_name and root_exception_message fields.
+   Default: false.
 * **includeLevelName**: If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
 * **shortPatternLayout**: Short message format. Default: `"%m%nopex"`.
 * **fullPatternLayout**: Full message format (Stacktrace). Default: `"%m"`.
