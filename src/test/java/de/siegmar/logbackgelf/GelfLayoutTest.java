@@ -133,7 +133,7 @@ public class GelfLayoutTest {
         layout.setIncludeLevelName(true);
         layout.addStaticField("foo:bar");
         layout.setIncludeCallerData(true);
-        layout.setIncludeRootException(true);
+        layout.setIncludeRootCauseData(true);
         layout.start();
 
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -177,7 +177,7 @@ public class GelfLayoutTest {
 
     @Test
     public void noRootException() throws IOException {
-        layout.setIncludeRootException(true);
+        layout.setIncludeRootCauseData(true);
         layout.start();
 
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -193,7 +193,7 @@ public class GelfLayoutTest {
 
     @Test
     public void rootExceptionWithoutCause() throws IOException {
-        layout.setIncludeRootException(true);
+        layout.setIncludeRootCauseData(true);
         layout.start();
 
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -209,13 +209,13 @@ public class GelfLayoutTest {
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
 
-        assertEquals("java.io.IOException", jsonNode.get("_root_exception_class_name").textValue());
-        assertEquals("Example Exception", jsonNode.get("_root_exception_message").textValue());
+        assertEquals("java.io.IOException", jsonNode.get("_root_cause_class_name").textValue());
+        assertEquals("Example Exception", jsonNode.get("_root_cause_message").textValue());
     }
 
     @Test
     public void rootExceptionWithCause() throws IOException {
-        layout.setIncludeRootException(true);
+        layout.setIncludeRootCauseData(true);
         layout.start();
 
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -234,10 +234,10 @@ public class GelfLayoutTest {
         basicValidation(jsonNode);
 
         assertEquals("java.lang.IllegalStateException",
-            jsonNode.get("_root_exception_class_name").textValue());
+            jsonNode.get("_root_cause_class_name").textValue());
 
         assertEquals("Example Exception 2",
-            jsonNode.get("_root_exception_message").textValue());
+            jsonNode.get("_root_cause_message").textValue());
     }
 
 }

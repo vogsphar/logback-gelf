@@ -77,7 +77,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
      * If true, root cause exception of the exception passed with the log message will be
      * exposed in the exception field. Default: false.
      */
-    private boolean includeRootException;
+    private boolean includeRootCauseData;
 
     /**
      * If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
@@ -139,12 +139,12 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         this.includeCallerData = includeCallerData;
     }
 
-    public boolean isIncludeRootException() {
-        return includeRootException;
+    public boolean isIncludeRootCauseData() {
+        return includeRootCauseData;
     }
 
-    public void setIncludeRootException(final boolean includeRootException) {
-        this.includeRootException = includeRootException;
+    public void setIncludeRootCauseData(final boolean includeRootCauseData) {
+        this.includeRootCauseData = includeRootCauseData;
     }
 
     public boolean isIncludeLevelName() {
@@ -278,7 +278,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             additionalFields.putAll(buildCallerData(event.getCallerData()));
         }
 
-        if (includeRootException) {
+        if (includeRootCauseData) {
             additionalFields.putAll(buildRootExceptionData(event.getThrowableProxy()));
         }
 
@@ -321,8 +321,8 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
         }
 
         final Map<String, Object> exceptionDataMap = new HashMap<>(2);
-        exceptionDataMap.put("root_exception_class_name", rootException.getClassName());
-        exceptionDataMap.put("root_exception_message", rootException.getMessage());
+        exceptionDataMap.put("root_cause_class_name", rootException.getClassName());
+        exceptionDataMap.put("root_cause_message", rootException.getMessage());
 
         return exceptionDataMap;
     }
