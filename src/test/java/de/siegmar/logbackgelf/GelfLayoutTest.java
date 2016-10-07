@@ -209,7 +209,8 @@ public class GelfLayoutTest {
         final ObjectMapper om = new ObjectMapper();
         final JsonNode jsonNode = om.readTree(logMsg);
 
-        assertEquals("java.io.IOException", jsonNode.get("_exception").textValue());
+        assertEquals("java.io.IOException", jsonNode.get("_root_exception_class_name").textValue());
+        assertEquals("Example Exception", jsonNode.get("_root_exception_message").textValue());
     }
 
     @Test
@@ -232,7 +233,11 @@ public class GelfLayoutTest {
         final JsonNode jsonNode = om.readTree(logMsg);
         basicValidation(jsonNode);
 
-        assertEquals("java.lang.IllegalStateException", jsonNode.get("_exception").textValue());
+        assertEquals("java.lang.IllegalStateException",
+            jsonNode.get("_root_exception_class_name").textValue());
+
+        assertEquals("Example Exception 2",
+            jsonNode.get("_root_exception_message").textValue());
     }
 
 }
