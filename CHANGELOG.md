@@ -1,4 +1,4 @@
-## 1.0.1 (TBD)
+## 1.0.1 (2016-10-08)
 
 - Add support for forwarding of exception root cause
 - Add support for TLS encryption (with TCP)
