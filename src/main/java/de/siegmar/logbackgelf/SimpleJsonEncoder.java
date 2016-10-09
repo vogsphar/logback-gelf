@@ -21,8 +21,6 @@ package de.siegmar.logbackgelf;
 
 /**
  * Simple JSON encoder with very basic functionality that is required by this library.
- *
- * @author Oliver Siegmar
  */
 class SimpleJsonEncoder {
 
