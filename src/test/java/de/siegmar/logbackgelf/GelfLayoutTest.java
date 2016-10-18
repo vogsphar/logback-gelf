@@ -81,7 +81,8 @@ public class GelfLayoutTest {
         final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         final Logger logger = lc.getLogger(LOGGER_NAME);
 
-        final String logMsg = layout.doLayout(simpleLoggingEvent(logger, new IOException(new IOException(new IOException()))));
+        final String logMsg = layout.doLayout(simpleLoggingEvent(logger,
+            new IOException(new IOException(new IOException()))));
 
         assertNotNull(logMsg);
     }
