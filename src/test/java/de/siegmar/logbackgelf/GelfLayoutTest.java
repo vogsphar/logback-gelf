@@ -73,6 +73,19 @@ public class GelfLayoutTest {
         assertEquals("message 1", msg.readLine());
     }
 
+    @Test(timeout = 400L)
+    public void nestedExceptionShouldNotFail() {
+        layout.setIncludeRootCauseData(true);
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg = layout.doLayout(simpleLoggingEvent(logger, new IOException(new IOException(new IOException()))));
+
+        assertNotNull(logMsg);
+    }
+
     private LoggingEvent simpleLoggingEvent(final Logger logger, final Throwable e) {
         return new LoggingEvent(
             LOGGER_NAME,

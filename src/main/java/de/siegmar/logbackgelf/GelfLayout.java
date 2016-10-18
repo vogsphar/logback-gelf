@@ -334,7 +334,7 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
         IThrowableProxy rootCause = throwableProxy;
         while (rootCause.getCause() != null) {
-            rootCause = throwableProxy.getCause();
+            rootCause = rootCause.getCause();
         }
 
         return rootCause;
