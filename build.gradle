@@ -6,7 +6,7 @@ apply plugin: 'signing'
 
 group = "de.siegmar"
 archivesBaseName = "logback-gelf"
-version = "1.0.2"
+version = "1.0.3"
 
 sourceCompatibility = 1.7
 
