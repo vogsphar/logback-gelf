@@ -1,3 +1,7 @@
+## 1.0.3 (2017-01-12)
+
+- Add support for logback 1.1.8
+
 ## 1.0.2 (2016-10-18)
 
 - Fix possible infinite loop bug with exception root cause

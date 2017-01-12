@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 
-abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+public abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     private static final int DEFAULT_GELF_PORT = 12201;
 
