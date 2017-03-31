@@ -85,6 +85,14 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
     private boolean includeLevelName;
 
     /**
+     * If true, a system depended newline separator will be added at the end of each message.
+     * Don't use this in conjunction with TCP or UDP appenders, as this is only reasonable for
+     * console logging!
+     * Default: false.
+     */
+    private boolean appendNewline;
+
+    /**
      * Short message format. Default: `"%m%nopex"`.
      */
     private PatternLayout shortPatternLayout;
@@ -153,6 +161,14 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
 
     public void setIncludeLevelName(final boolean includeLevelName) {
         this.includeLevelName = includeLevelName;
+    }
+
+    public boolean isAppendNewline() {
+        return appendNewline;
+    }
+
+    public void setAppendNewline(final boolean appendNewline) {
+        this.appendNewline = appendNewline;
     }
 
     public PatternLayout getShortPatternLayout() {
@@ -246,7 +262,8 @@ public class GelfLayout extends LayoutBase<ILoggingEvent> {
             new GelfMessage(originHost, shortMessage, fullMessage, timestamp,
                 LevelToSyslogSeverity.convert(event), additionalFields);
 
-        return gelfMessage.toJSON();
+        final String jsonStr = gelfMessage.toJSON();
+        return appendNewline ? jsonStr + System.lineSeparator() : jsonStr;
     }
 
     private Map<String, Object> mapAdditionalFields(final ILoggingEvent event) {

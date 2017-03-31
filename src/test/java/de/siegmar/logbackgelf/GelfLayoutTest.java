@@ -73,6 +73,19 @@ public class GelfLayoutTest {
         assertEquals("message 1", msg.readLine());
     }
 
+    @Test
+    public void newline() throws IOException {
+        layout.setAppendNewline(true);
+        layout.start();
+
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger logger = lc.getLogger(LOGGER_NAME);
+
+        final String logMsg = layout.doLayout(simpleLoggingEvent(logger, null));
+
+        assertTrue(logMsg.endsWith(System.lineSeparator()));
+    }
+
     @Test(timeout = 400L)
     public void nestedExceptionShouldNotFail() {
         layout.setIncludeRootCauseData(true);

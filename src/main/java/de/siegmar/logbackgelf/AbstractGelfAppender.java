@@ -79,6 +79,11 @@ public abstract class AbstractGelfAppender extends UnsynchronizedAppenderBase<IL
             layout.start();
         }
 
+        if (layout.isAppendNewline()) {
+            addError("Newline separator must not be enabled in layout");
+            return;
+        }
+
         try {
             startAppender();
 

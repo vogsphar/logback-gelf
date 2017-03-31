@@ -289,6 +289,9 @@ Configuration
    message will be exposed in the root_cause_class_name and root_cause_message fields.
    Default: false.
 * **includeLevelName**: If true, the log level name (e.g. DEBUG) will be sent, too. Default: false.
+* **appendNewline**: If true, a system depended newline separator will be added at the end of each message.
+  Don't use this in conjunction with TCP or UDP appenders, as this is only reasonable for
+  console logging!
 * **shortPatternLayout**: Short message format. Default: `"%m%nopex"`.
 * **fullPatternLayout**: Full message format (Stacktrace). Default: `"%m"`.
 * **staticFields**: Additional, static fields to send to graylog. Defaults: none.
