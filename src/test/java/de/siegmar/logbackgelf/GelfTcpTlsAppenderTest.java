@@ -138,7 +138,7 @@ public class GelfTcpTlsAppenderTest {
                 if (!semaphore.tryAcquire(10, TimeUnit.SECONDS)) {
                     throw new IllegalStateException("Couldn't acquire semaphore!");
                 }
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 throw new IllegalStateException(e);
             }
             return receivedData;
