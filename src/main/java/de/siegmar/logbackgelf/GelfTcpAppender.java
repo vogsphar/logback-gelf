@@ -113,6 +113,7 @@ public class GelfTcpAppender extends AbstractGelfAppender {
                 try {
                     Thread.sleep(retryDelay);
                 } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     break;
                 }
             }
