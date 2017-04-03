@@ -1,4 +1,4 @@
-## 1.0.4 (2017-??-??)
+## 1.0.4 (2017-04-03)
 
 - Add support for GELF console logging (appendNewline in GelfLayout) 
 - Fix interrupted flag in GelfTcpAppender (restore flag after catching InterruptedException)
