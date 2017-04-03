@@ -47,7 +47,7 @@ public class GelfLayoutTest {
 
     private static final String LOGGER_NAME = GelfLayoutTest.class.getCanonicalName();
 
-    private GelfLayout layout = new GelfLayout();
+    private final GelfLayout layout = new GelfLayout();
 
     @Before
     public void before() {
@@ -151,7 +151,7 @@ public class GelfLayoutTest {
         final String line = msg.readLine();
         assertTrue("Unexpected line: " + line, line.matches(
             "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
-                + "~\\[test/:na\\]$"));
+                + "~\\[test/:na]$"));
     }
 
     @Test

@@ -107,11 +107,11 @@ public class GelfTcpTlsAppenderTest {
         return gelfAppender;
     }
 
-    private JsonNode receiveMessage() throws IOException, InterruptedException {
+    private JsonNode receiveMessage() throws IOException {
         return new ObjectMapper().readTree(server.getReceivedData());
     }
 
-    private void stopLogger(final Logger logger) throws IOException {
+    private void stopLogger(final Logger logger) {
         final GelfTcpTlsAppender gelfAppender = (GelfTcpTlsAppender) logger.getAppender("GELF");
         gelfAppender.stop();
     }
