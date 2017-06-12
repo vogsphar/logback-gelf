@@ -19,15 +19,12 @@
 
 package de.siegmar.logbackgelf;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -39,11 +36,6 @@ public class GelfTcpTlsAppender extends GelfTcpAppender {
      */
     private boolean trustAllCertificates;
 
-    /**
-     * Socket factory used for creating new sockets.
-     */
-    private SSLSocketFactory socketFactory;
-
     public boolean isTrustAllCertificates() {
         return trustAllCertificates;
     }
@@ -53,23 +45,16 @@ public class GelfTcpTlsAppender extends GelfTcpAppender {
     }
 
     @Override
-    protected void startAppender() throws IOException {
-        super.startAppender();
-
-        try {
-            socketFactory = initSocketFactory();
-        } catch (final KeyManagementException | NoSuchAlgorithmException e) {
-            throw new IOException(e);
-        }
-    }
-
-    private SSLSocketFactory initSocketFactory()
-        throws KeyManagementException, NoSuchAlgorithmException {
+    protected SSLSocketFactory initSocketFactory() {
         if (trustAllCertificates) {
             addWarn("Enable trustAllCertificates - don't use this in production!");
-            final SSLContext context = SSLContext.getInstance("TLS");
-            context.init(null, buildNoopTrustManagers(), new SecureRandom());
-            return context.getSocketFactory();
+            try {
+                final SSLContext context = SSLContext.getInstance("TLS");
+                context.init(null, buildNoopTrustManagers(), new SecureRandom());
+                return context.getSocketFactory();
+            } catch (final NoSuchAlgorithmException | KeyManagementException e) {
+                throw new IllegalStateException(e);
+            }
         }
 
         return (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -91,14 +76,6 @@ public class GelfTcpTlsAppender extends GelfTcpAppender {
                 }
             },
         };
-    }
-
-    @Override
-    protected Socket getSocket() throws IOException {
-        final SSLSocket socket = (SSLSocket) socketFactory.createSocket();
-        socket.connect(new InetSocketAddress(getGraylogHost(), getGraylogPort()),
-            getConnectTimeout());
-        return socket;
     }
 
 }

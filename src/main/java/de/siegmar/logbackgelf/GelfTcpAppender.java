@@ -25,6 +25,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
 
+import javax.net.SocketFactory;
+
 public class GelfTcpAppender extends AbstractGelfAppender {
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 15_000;
@@ -57,6 +59,11 @@ public class GelfTcpAppender extends AbstractGelfAppender {
      * Default: 3,000 milliseconds.
      */
     private int retryDelay = DEFAULT_RETRY_DELAY;
+
+    /**
+     * Socket factory used for creating new sockets.
+     */
+    private SocketFactory socketFactory;
 
     private OutputStream outputStream;
 
@@ -95,6 +102,14 @@ public class GelfTcpAppender extends AbstractGelfAppender {
 
     public void setRetryDelay(final int retryDelay) {
         this.retryDelay = retryDelay;
+    }
+
+    protected void startAppender() throws IOException {
+        socketFactory = initSocketFactory();
+    }
+
+    protected SocketFactory initSocketFactory() {
+        return SocketFactory.getDefault();
     }
 
     @Override
@@ -156,7 +171,7 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     private void connect() throws IOException {
         closeOut();
 
-        final Socket socket = getSocket();
+        final Socket socket = createSocket();
         outputStream = socket.getOutputStream();
 
         nextReconnect = reconnectInterval < 0
@@ -164,11 +179,9 @@ public class GelfTcpAppender extends AbstractGelfAppender {
             : System.currentTimeMillis() + (reconnectInterval * SEC_TO_MSEC);
     }
 
-    protected Socket getSocket() throws IOException {
-        final Socket socket = new Socket();
+    private Socket createSocket() throws IOException {
+        final Socket socket = socketFactory.createSocket();
         socket.connect(new InetSocketAddress(getGraylogHost(), getGraylogPort()), connectTimeout);
-        socket.shutdownInput();
-
         return socket;
     }
 
