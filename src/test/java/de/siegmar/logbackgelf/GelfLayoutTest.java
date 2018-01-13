@@ -151,7 +151,7 @@ public class GelfLayoutTest {
         final String line = msg.readLine();
         assertTrue("Unexpected line: " + line, line.matches(
             "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
-                + "~\\[test/:na]$"));
+                + "~\\[.+/:na]$"));
     }
 
     @Test
