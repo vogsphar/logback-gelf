@@ -19,13 +19,12 @@
 
 package de.siegmar.logbackgelf;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Arrays;
 
 import javax.net.SocketFactory;
+
+import de.siegmar.logbackgelf.pool.PooledObjectFactory;
+import de.siegmar.logbackgelf.pool.SimpleObjectPool;
 
 public class GelfTcpAppender extends AbstractGelfAppender {
 
@@ -33,9 +32,9 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     private static final int DEFAULT_RECONNECT_INTERVAL = 300;
     private static final int DEFAULT_MAX_RETRIES = 2;
     private static final int DEFAULT_RETRY_DELAY = 3_000;
-    private static final int SEC_TO_MSEC = 1000;
-
-    private final Object lock = new Object();
+    private static final int DEFAULT_POOL_SIZE = 2;
+    private static final int DEFAULT_POOL_MAX_WAIT_TIME = 5_000;
+    private static final int DEFAULT_POOL_MAX_LIFE_TIME = 300;
 
     /**
      * Maximum time (in milliseconds) to wait for establishing a connection. A value of 0 disables
@@ -61,16 +60,22 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     private int retryDelay = DEFAULT_RETRY_DELAY;
 
     /**
-     * Socket factory used for creating new sockets.
+     * Number of concurrent tcp connections (minimum 1). Default: 2.
      */
-    private SocketFactory socketFactory;
-
-    private OutputStream outputStream;
+    private int poolSize = DEFAULT_POOL_SIZE;
 
     /**
-     * Timestamp scheduled for the next reconnect.
+     * Maximum amount of time (in milliseconds) to wait for a connection to become
+     * available from the pool. Default: 5,000 milliseconds.
      */
-    private long nextReconnect;
+    private int poolMaxWaitTime = DEFAULT_POOL_MAX_WAIT_TIME;
+
+    /**
+     * Maximum amount of time (in seconds) a connection can be re-used. Default: 300 seconds.
+     */
+    private int poolMaxLifeTime = DEFAULT_POOL_MAX_LIFE_TIME;
+
+    private SimpleObjectPool<TcpConnection> connectionPool;
 
     public int getConnectTimeout() {
         return connectTimeout;
@@ -104,8 +109,38 @@ public class GelfTcpAppender extends AbstractGelfAppender {
         this.retryDelay = retryDelay;
     }
 
-    protected void startAppender() throws IOException {
-        socketFactory = initSocketFactory();
+    public int getPoolSize() {
+        return poolSize;
+    }
+
+    public void setPoolSize(final int poolSize) {
+        this.poolSize = poolSize;
+    }
+
+    public long getPoolMaxWaitTime() {
+        return poolMaxWaitTime;
+    }
+
+    public void setPoolMaxWaitTime(final int poolMaxWaitTime) {
+        this.poolMaxWaitTime = poolMaxWaitTime;
+    }
+
+    public long getPoolMaxLifeTime() {
+        return poolMaxLifeTime;
+    }
+
+    public void setPoolMaxLifeTime(final int poolMaxLifeTime) {
+        this.poolMaxLifeTime = poolMaxLifeTime;
+    }
+
+    protected void startAppender() {
+        connectionPool = new SimpleObjectPool<>(new PooledObjectFactory<TcpConnection>() {
+            @Override
+            public TcpConnection newInstance() {
+                return new TcpConnection(initSocketFactory(),
+                    getGraylogHost(), getGraylogPort(), connectTimeout);
+            }
+        }, poolSize, poolMaxWaitTime, poolMaxLifeTime);
     }
 
     protected SocketFactory initSocketFactory() {
@@ -113,7 +148,7 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     }
 
     @Override
-    protected void appendMessage(final byte[] messageToSend) throws IOException {
+    protected void appendMessage(final byte[] messageToSend) {
         // GELF via TCP requires 0 termination
         final byte[] tcpMessage = Arrays.copyOf(messageToSend, messageToSend.length + 1);
 
@@ -142,64 +177,33 @@ public class GelfTcpAppender extends AbstractGelfAppender {
      *
      * @return {@code true} if message was sent successfully, {@code false} otherwise.
      */
+    @SuppressWarnings("checkstyle:illegalcatch")
     private boolean sendMessage(final byte[] messageToSend) {
-        synchronized (lock) {
-            try {
-                if (System.currentTimeMillis() > nextReconnect) {
-                    connect();
-                }
+        TcpConnection tcpConnection = null;
+        try {
+            tcpConnection = connectionPool.borrowObject();
+            tcpConnection.write(messageToSend);
 
-                outputStream.write(messageToSend);
+            return true;
+        } catch (final Exception e) {
+            if (tcpConnection != null) {
+                connectionPool.invalidateObject(tcpConnection);
+                tcpConnection = null;
+            }
 
-                return true;
-            } catch (final IOException e) {
-                addError(String.format("Error sending message via tcp://%s:%s",
-                    getGraylogHost(), getGraylogPort()), e);
-
-                // force reconnect int next loop cycle
-                nextReconnect = 0;
+            addError(String.format("Error sending message via tcp://%s:%s",
+                getGraylogHost(), getGraylogPort()), e);
+        } finally {
+            if (tcpConnection != null) {
+                connectionPool.returnObject(tcpConnection);
             }
         }
         return false;
     }
 
-    /**
-     * Opens a new connection (and closes the old one - if existent).
-     *
-     * @throws IOException if the connection failed.
-     */
-    private void connect() throws IOException {
-        closeOut();
-
-        final Socket socket = createSocket();
-        outputStream = socket.getOutputStream();
-
-        nextReconnect = reconnectInterval < 0
-            ? Long.MAX_VALUE
-            : System.currentTimeMillis() + (reconnectInterval * SEC_TO_MSEC);
-    }
-
-    private Socket createSocket() throws IOException {
-        final Socket socket = socketFactory.createSocket();
-        socket.connect(new InetSocketAddress(getGraylogHost(), getGraylogPort()), connectTimeout);
-        return socket;
-    }
-
-    private void closeOut() {
-        if (outputStream != null) {
-            try {
-                outputStream.close();
-            } catch (final IOException e) {
-                addError("Can't close stream", e);
-            }
-        }
-    }
-
     @Override
-    protected void close() throws IOException {
-        synchronized (lock) {
-            closeOut();
-        }
+    protected void close() {
+        connectionPool.close();
     }
 
 }

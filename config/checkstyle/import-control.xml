@@ -16,4 +16,6 @@
     <allow pkg="org.slf4j"/>
     <allow pkg="org.junit"/>
 
+    <allow pkg="de.siegmar.logbackgelf"/>
+
 </import-control>

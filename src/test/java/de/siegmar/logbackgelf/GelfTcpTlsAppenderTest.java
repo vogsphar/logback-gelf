@@ -63,7 +63,7 @@ public class GelfTcpTlsAppenderTest {
     }
 
     @Test
-    public void simple() throws IOException, InterruptedException {
+    public void simple() throws IOException {
         final Logger logger = setupLogger();
 
         logger.error("Test message");
