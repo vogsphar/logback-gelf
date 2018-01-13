@@ -161,6 +161,8 @@ Advanced TCP configuration:
         <reconnectInterval>300</reconnectInterval>
         <maxRetries>2</maxRetries>
         <retryDelay>3000</retryDelay>
+        <poolSize>2</poolSize>
+        <poolMaxWaitTime>5000</poolMaxWaitTime>
         <layout class="de.siegmar.logbackgelf.GelfLayout">
             <originHost>localhost</originHost>
             <includeRawMessage>false</includeRawMessage>
@@ -205,6 +207,8 @@ Advanced TCP with TLS configuration:
         <reconnectInterval>300</reconnectInterval>
         <maxRetries>2</maxRetries>
         <retryDelay>3000</retryDelay>
+        <poolSize>2</poolSize>
+        <poolMaxWaitTime>5000</poolMaxWaitTime>
         <trustAllCertificates>false</trustAllCertificates>
         <layout class="de.siegmar.logbackgelf.GelfLayout">
             <originHost>localhost</originHost>
@@ -266,6 +270,9 @@ Configuration
 * **maxRetries**: Number of retries. A value of 0 disables retry attempts. Default: 2.
 * **retryDelay**: Time (in milliseconds) between retry attempts. Ignored if maxRetries is 0.
   Default: 3,000 milliseconds.
+* **poolSize**: Number of concurrent tcp connections (minimum 1). Default: 2.
+* **poolMaxWaitTime**: Maximum amount of time (in milliseconds) to wait for a connection to become
+  available from the pool. Default: 5,000 milliseconds.
 
 
 `de.siegmar.logbackgelf.GelfTcpTlsAppender`

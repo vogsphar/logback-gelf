@@ -57,7 +57,7 @@ public class SimpleObjectPool<T extends PooledObject> {
     }
 
     private boolean needToEvict(final T pooledObject) {
-        return pooledObject.lifeTime() > maxLifeTime;
+        return maxLifeTime > 0 && pooledObject.lifeTime() > maxLifeTime;
     }
 
     private T recycle(final T pooledObject) {

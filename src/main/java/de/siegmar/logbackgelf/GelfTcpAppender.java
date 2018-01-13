@@ -34,7 +34,6 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     private static final int DEFAULT_RETRY_DELAY = 3_000;
     private static final int DEFAULT_POOL_SIZE = 2;
     private static final int DEFAULT_POOL_MAX_WAIT_TIME = 5_000;
-    private static final int DEFAULT_POOL_MAX_LIFE_TIME = 300;
 
     /**
      * Maximum time (in milliseconds) to wait for establishing a connection. A value of 0 disables
@@ -69,11 +68,6 @@ public class GelfTcpAppender extends AbstractGelfAppender {
      * available from the pool. Default: 5,000 milliseconds.
      */
     private int poolMaxWaitTime = DEFAULT_POOL_MAX_WAIT_TIME;
-
-    /**
-     * Maximum amount of time (in seconds) a connection can be re-used. Default: 300 seconds.
-     */
-    private int poolMaxLifeTime = DEFAULT_POOL_MAX_LIFE_TIME;
 
     private SimpleObjectPool<TcpConnection> connectionPool;
 
@@ -125,14 +119,6 @@ public class GelfTcpAppender extends AbstractGelfAppender {
         this.poolMaxWaitTime = poolMaxWaitTime;
     }
 
-    public long getPoolMaxLifeTime() {
-        return poolMaxLifeTime;
-    }
-
-    public void setPoolMaxLifeTime(final int poolMaxLifeTime) {
-        this.poolMaxLifeTime = poolMaxLifeTime;
-    }
-
     protected void startAppender() {
         connectionPool = new SimpleObjectPool<>(new PooledObjectFactory<TcpConnection>() {
             @Override
@@ -140,7 +126,7 @@ public class GelfTcpAppender extends AbstractGelfAppender {
                 return new TcpConnection(initSocketFactory(),
                     getGraylogHost(), getGraylogPort(), connectTimeout);
             }
-        }, poolSize, poolMaxWaitTime, poolMaxLifeTime);
+        }, poolSize, poolMaxWaitTime, reconnectInterval);
     }
 
     protected SocketFactory initSocketFactory() {

@@ -1,3 +1,7 @@
+## 1.0.5 (2018-??-??)
+
+- Add a simple connection pool to GelfTcpAppender
+
 ## 1.0.4 (2017-04-03)
 
 - Add support for GELF console logging (appendNewline in GelfLayout) 
