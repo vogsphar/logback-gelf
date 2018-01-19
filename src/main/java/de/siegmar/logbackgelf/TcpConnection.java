@@ -30,8 +30,8 @@ import de.siegmar.logbackgelf.pool.PooledObject;
 
 public class TcpConnection extends PooledObject {
 
+    private final AddressResolver addressResolver;
     private final SocketFactory socketFactory;
-    private final String host;
     private final int port;
     private final int connectTimeout;
 
@@ -40,8 +40,9 @@ public class TcpConnection extends PooledObject {
     TcpConnection(final SocketFactory socketFactory,
                   final String host, final int port, final int connectTimeout) {
 
+        addressResolver = new AddressResolver(host);
+
         this.socketFactory = socketFactory;
-        this.host = host;
         this.port = port;
         this.connectTimeout = connectTimeout;
     }
@@ -57,7 +58,7 @@ public class TcpConnection extends PooledObject {
 
     private void connect() throws IOException {
         final Socket socket = socketFactory.createSocket();
-        socket.connect(new InetSocketAddress(host, port), connectTimeout);
+        socket.connect(new InetSocketAddress(addressResolver.resolve(), port), connectTimeout);
         outputStream = socket.getOutputStream();
     }
 
