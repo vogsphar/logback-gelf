@@ -135,8 +135,8 @@ public class GelfTcpAppenderTest {
 
         @Override
         public void run() {
-            try (final Socket socket = server.accept()) {
-                try (final DataInputStream in = new DataInputStream(socket.getInputStream())) {
+            try (Socket socket = server.accept()) {
+                try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
                     receivedData = ByteStreams.toByteArray(in);
                 }
             } catch (final IOException e) {
