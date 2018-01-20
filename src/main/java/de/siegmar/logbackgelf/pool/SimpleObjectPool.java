@@ -41,6 +41,12 @@ public class SimpleObjectPool<T extends PooledObject> {
         if (poolSize < 1) {
             throw new IllegalArgumentException("poolSize must be > 0");
         }
+        if (maxWaitTime < 0) {
+            throw new IllegalArgumentException("maxWaitTime must be >= 0");
+        }
+        if (maxLifeTime < 0) {
+            throw new IllegalArgumentException("maxLifeTime must be >= 0");
+        }
 
         this.objectFactory = objectFactory;
         this.maxWaitTime = maxWaitTime;
