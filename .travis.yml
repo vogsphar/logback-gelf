@@ -1,9 +1,9 @@
 language: java
 jdk:
-  - oraclejdk8
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - oraclejdk9
+install: true
+script: ./loom -n build
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+    - $HOME/.loom/library/
+    - $HOME/.loom/repository/

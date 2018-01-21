@@ -1,0 +1,16 @@
+plugins:
+  - checkstyle
+#  - spotbugs
+  - maven
+  - junit
+settings:
+  moduleName: logbackgelf
+  javaPlatformVersion: 7
+  maven.groupAndArtifact: de.siegmar:logbackgelf
+compileDependencies:
+  - ch.qos.logback:logback-classic:1.1.8
+testDependencies:
+  - org.junit.vintage:junit-vintage-engine:4.12.3
+  - com.google.guava:guava:19.0
+  - com.fasterxml.jackson.core:jackson-databind:2.7.2
+

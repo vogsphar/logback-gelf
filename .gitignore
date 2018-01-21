@@ -1,3 +1,6 @@
+# Loom
+.loom/
+
 # Gradle
 .gradle/
 build/
