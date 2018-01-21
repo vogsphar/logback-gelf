@@ -1,4 +1,4 @@
-## 1.0.5 (2018-??-??)
+## 1.1.0 (2018-??-??)
 
 - Add a simple connection pool to GelfTcpAppender
 
