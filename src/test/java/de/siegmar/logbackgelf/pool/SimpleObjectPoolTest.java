@@ -71,7 +71,7 @@ public class SimpleObjectPoolTest {
         pool.returnObject(o3);
     }
 
-    private static final class MyPooledObject extends PooledObject {
+    private static final class MyPooledObject extends AbstractPooledObject {
 
         private final int id;
 

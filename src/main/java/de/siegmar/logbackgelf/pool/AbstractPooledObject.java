@@ -19,7 +19,7 @@
 
 package de.siegmar.logbackgelf.pool;
 
-public class PooledObject {
+public abstract class AbstractPooledObject {
 
     private final long createdAt = System.currentTimeMillis();
 

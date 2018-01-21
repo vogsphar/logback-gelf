@@ -19,35 +19,32 @@
 
 package de.siegmar.logbackgelf;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class AddressResolver {
+import org.junit.Test;
 
-    private final String hostname;
-    private final AtomicInteger cnt;
+public class AddressResolverTest {
 
-    AddressResolver(final String hostname) {
-        this(hostname, new AtomicInteger());
-    }
+    @Test
+    public void test() throws UnknownHostException {
+        final AddressResolver resolver =
+            new AddressResolver("foo", new AtomicInteger(Integer.MAX_VALUE)) {
+                @Override
+                protected InetAddress[] lookup() throws UnknownHostException {
+                    return new InetAddress[]{
+                        InetAddress.getByName("127.0.0.1"),
+                        InetAddress.getByName("8.8.8.8"),
+                    };
+                }
+            };
 
-    AddressResolver(final String hostname, final AtomicInteger cnt) {
-        this.hostname = hostname;
-        this.cnt = cnt;
-    }
-
-    public InetAddress resolve() throws UnknownHostException {
-        final InetAddress[] ips = lookup();
-        return ips[modulo(cnt.getAndIncrement(), ips.length)];
-    }
-
-    protected InetAddress[] lookup() throws UnknownHostException {
-        return InetAddress.getAllByName(hostname);
-    }
-
-    private static int modulo(final int value, final int modulo) {
-        return ((value % modulo) + modulo) % modulo;
+        assertEquals("8.8.8.8", resolver.resolve().getHostAddress());
+        assertEquals("127.0.0.1", resolver.resolve().getHostAddress());
+        assertEquals("8.8.8.8", resolver.resolve().getHostAddress());
     }
 
 }

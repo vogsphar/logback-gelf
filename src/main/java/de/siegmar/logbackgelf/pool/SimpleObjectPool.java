@@ -19,16 +19,18 @@
 
 package de.siegmar.logbackgelf.pool;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class SimpleObjectPool<T extends PooledObject> {
+public class SimpleObjectPool<T extends AbstractPooledObject> {
 
     private static final int MILLIS_PER_SECOND = 1000;
 
     private final BlockingQueue<T> pool = new LinkedBlockingQueue<>();
-    private final BlockingQueue<T> allObjects = new LinkedBlockingQueue<>();
+    private final Set<T> allObjects = new HashSet<>();
 
     private final PooledObjectFactory<T> objectFactory;
     private final int maxWaitTime;
@@ -41,39 +43,65 @@ public class SimpleObjectPool<T extends PooledObject> {
         if (poolSize < 1) {
             throw new IllegalArgumentException("poolSize must be > 0");
         }
-        if (maxWaitTime < 0) {
-            throw new IllegalArgumentException("maxWaitTime must be >= 0");
-        }
-        if (maxLifeTime < 0) {
-            throw new IllegalArgumentException("maxLifeTime must be >= 0");
-        }
 
         this.objectFactory = objectFactory;
         this.maxWaitTime = maxWaitTime;
-        this.maxLifeTime = maxLifeTime * MILLIS_PER_SECOND;
+        this.maxLifeTime = maxLifeTime < 0 ? maxLifeTime : maxLifeTime * MILLIS_PER_SECOND;
 
         for (int i = 0; i < poolSize; i++) {
-            pool.add(newInstance());
+            final T pooledObject = this.objectFactory.newInstance();
+            pool.add(pooledObject);
+            allObjects.add(pooledObject);
+        }
+    }
+
+    @SuppressWarnings("checkstyle:illegalcatch")
+    public void execute(final PooledObjectConsumer<T> consumer) throws Exception {
+        T pooledObject = null;
+        try {
+            pooledObject = borrowObject();
+            consumer.accept(pooledObject);
+        } catch (final Exception e) {
+            if (pooledObject != null) {
+                invalidateObject(pooledObject);
+                pooledObject = null;
+            }
+
+            throw e;
+        } finally {
+            if (pooledObject != null) {
+                returnObject(pooledObject);
+            }
         }
     }
 
     public T borrowObject() throws InterruptedException {
-        final T pooledObject = pool.poll(maxWaitTime, TimeUnit.MILLISECONDS);
+        final T pooledObject;
+        if (maxWaitTime < 0) {
+            pooledObject = pool.take();
+        } else {
+            pooledObject = pool.poll(maxWaitTime, TimeUnit.MILLISECONDS);
+
+            if (pooledObject == null) {
+                throw new IllegalStateException("Couldn't aquire connection from pool");
+            }
+        }
+
         return needToEvict(pooledObject) ? recycle(pooledObject) : pooledObject;
     }
 
     private boolean needToEvict(final T pooledObject) {
-        return maxLifeTime > 0 && pooledObject.lifeTime() > maxLifeTime;
+        return maxLifeTime >= 0 && pooledObject.lifeTime() > maxLifeTime;
     }
 
-    private T recycle(final T pooledObject) {
-        pooledObject.close();
-        return newInstance();
-    }
-
-    private T newInstance() {
+    private T recycle(final T oldInstance) {
         final T newInstance = objectFactory.newInstance();
-        allObjects.add(newInstance);
+        synchronized (allObjects) {
+            allObjects.remove(oldInstance);
+            allObjects.add(newInstance);
+        }
+
+        oldInstance.close();
         return newInstance;
     }
 
@@ -86,8 +114,10 @@ public class SimpleObjectPool<T extends PooledObject> {
     }
 
     public void close() {
-        for (T object : allObjects) {
-            object.close();
+        synchronized (allObjects) {
+            for (T object : allObjects) {
+                object.close();
+            }
         }
     }
 

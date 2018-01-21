@@ -19,17 +19,19 @@
 
 package de.siegmar.logbackgelf;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import javax.net.SocketFactory;
 
+import de.siegmar.logbackgelf.pool.PooledObjectConsumer;
 import de.siegmar.logbackgelf.pool.PooledObjectFactory;
 import de.siegmar.logbackgelf.pool.SimpleObjectPool;
 
 public class GelfTcpAppender extends AbstractGelfAppender {
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 15_000;
-    private static final int DEFAULT_RECONNECT_INTERVAL = 300;
+    private static final int DEFAULT_RECONNECT_INTERVAL = 60;
     private static final int DEFAULT_MAX_RETRIES = 2;
     private static final int DEFAULT_RETRY_DELAY = 3_000;
     private static final int DEFAULT_POOL_SIZE = 2;
@@ -165,26 +167,21 @@ public class GelfTcpAppender extends AbstractGelfAppender {
      */
     @SuppressWarnings("checkstyle:illegalcatch")
     private boolean sendMessage(final byte[] messageToSend) {
-        TcpConnection tcpConnection = null;
         try {
-            tcpConnection = connectionPool.borrowObject();
-            tcpConnection.write(messageToSend);
-
-            return true;
+            connectionPool.execute(new PooledObjectConsumer<TcpConnection>() {
+                @Override
+                public void accept(final TcpConnection tcpConnection) throws IOException {
+                    tcpConnection.write(messageToSend);
+                }
+            });
         } catch (final Exception e) {
-            if (tcpConnection != null) {
-                connectionPool.invalidateObject(tcpConnection);
-                tcpConnection = null;
-            }
-
             addError(String.format("Error sending message via tcp://%s:%s",
                 getGraylogHost(), getGraylogPort()), e);
-        } finally {
-            if (tcpConnection != null) {
-                connectionPool.returnObject(tcpConnection);
-            }
+
+            return false;
         }
-        return false;
+
+        return true;
     }
 
     @Override

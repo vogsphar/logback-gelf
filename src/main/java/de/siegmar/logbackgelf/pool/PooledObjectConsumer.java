@@ -19,8 +19,8 @@
 
 package de.siegmar.logbackgelf.pool;
 
-public interface PooledObjectFactory<T extends AbstractPooledObject> {
+public interface PooledObjectConsumer<T extends AbstractPooledObject> {
 
-    T newInstance();
+    void accept(T pooledObject) throws Exception;
 
 }

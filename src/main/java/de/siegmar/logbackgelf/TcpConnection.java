@@ -26,9 +26,9 @@ import java.net.Socket;
 
 import javax.net.SocketFactory;
 
-import de.siegmar.logbackgelf.pool.PooledObject;
+import de.siegmar.logbackgelf.pool.AbstractPooledObject;
 
-public class TcpConnection extends PooledObject {
+public class TcpConnection extends AbstractPooledObject {
 
     private final AddressResolver addressResolver;
     private final SocketFactory socketFactory;
