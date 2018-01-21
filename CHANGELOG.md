@@ -1,3 +1,7 @@
+## 1.1.0 (2018-??-??)
+
+- Update dependency to logback 1.1.8 (resolves #1) 
+ 
 ## 1.0.4 (2017-04-03)
 
 - Add support for GELF console logging (appendNewline in GelfLayout) 
