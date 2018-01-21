@@ -38,6 +38,7 @@ Features
 - UDP (with chunking)
 - TCP (with or without TLS encryption)
 - Deflate compression in UDP mode
+- Client side load balancing (round robin)
 - Forwarding of MDC (Mapped Diagnostic Context)
 - Forwarding of caller data
 - Forwarding of static fields
@@ -250,6 +251,7 @@ Configuration
 `de.siegmar.logbackgelf.GelfUdpAppender`
 
 * **graylogHost**: IP or hostname of graylog server.
+  If the hostname resolves to multiple ip addresses, round robin will be used.
 * **graylogPort**: Port of graylog server. Default: 12201.
 * **layout**: See Layout configuration below.
 * **maxChunkSize**: Maximum size of GELF chunks in bytes. Default chunk size is 508 - this prevents
@@ -261,6 +263,7 @@ Configuration
 `de.siegmar.logbackgelf.GelfTcpAppender`
 
 * **graylogHost**: IP or hostname of graylog server.
+  If the hostname resolves to multiple ip addresses, round robin will be used.
 * **graylogPort**: Port of graylog server. Default: 12201.
 * **layout**: See Layout configuration below.
 * **connectTimeout**: Maximum time (in milliseconds) to wait for establishing a connection. A value
