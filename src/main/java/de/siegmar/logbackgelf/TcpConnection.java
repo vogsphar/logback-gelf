@@ -21,6 +21,7 @@ package de.siegmar.logbackgelf;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -38,10 +39,9 @@ public class TcpConnection extends AbstractPooledObject {
     private volatile OutputStream outputStream;
 
     TcpConnection(final SocketFactory socketFactory,
-                  final String host, final int port, final int connectTimeout) {
+                  final AddressResolver addressResolver, final int port, final int connectTimeout) {
 
-        addressResolver = new AddressResolver(host);
-
+        this.addressResolver = addressResolver;
         this.socketFactory = socketFactory;
         this.port = port;
         this.connectTimeout = connectTimeout;
@@ -58,7 +58,8 @@ public class TcpConnection extends AbstractPooledObject {
 
     private void connect() throws IOException {
         final Socket socket = socketFactory.createSocket();
-        socket.connect(new InetSocketAddress(addressResolver.resolve(), port), connectTimeout);
+        final InetAddress ip = addressResolver.resolve();
+        socket.connect(new InetSocketAddress(ip, port), connectTimeout);
         outputStream = socket.getOutputStream();
     }
 

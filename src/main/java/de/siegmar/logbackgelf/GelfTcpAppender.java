@@ -122,11 +122,13 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     }
 
     protected void startAppender() {
+        final AddressResolver addressResolver = new AddressResolver(getGraylogHost());
+
         connectionPool = new SimpleObjectPool<>(new PooledObjectFactory<TcpConnection>() {
             @Override
             public TcpConnection newInstance() {
                 return new TcpConnection(initSocketFactory(),
-                    getGraylogHost(), getGraylogPort(), connectTimeout);
+                    addressResolver, getGraylogPort(), connectTimeout);
             }
         }, poolSize, poolMaxWaitTime, reconnectInterval);
     }
