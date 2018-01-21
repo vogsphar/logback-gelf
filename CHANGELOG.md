@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Simple connection poolin in GelfTcpAppender & round robin host lookup in GelfUdpAppender
+- Simple connection pooling in GelfTcpAppender & round robin host lookup in GelfUdpAppender
   [\#11](https://github.com/osiegmar/logback-gelf/issues/11)
 
 ### Fixed

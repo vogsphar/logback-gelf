@@ -83,7 +83,7 @@ public class SimpleObjectPool<T extends AbstractPooledObject> {
             pooledObject = pool.poll(maxWaitTime, TimeUnit.MILLISECONDS);
 
             if (pooledObject == null) {
-                throw new IllegalStateException("Couldn't aquire connection from pool");
+                throw new IllegalStateException("Couldn't acquire connection from pool");
             }
         }
 
@@ -91,7 +91,7 @@ public class SimpleObjectPool<T extends AbstractPooledObject> {
     }
 
     private boolean needToEvict(final T pooledObject) {
-        return maxLifeTime >= 0 && pooledObject.lifeTime() > maxLifeTime;
+        return maxLifeTime < 0 || pooledObject.lifeTime() > maxLifeTime;
     }
 
     private T recycle(final T oldInstance) {

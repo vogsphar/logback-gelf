@@ -42,7 +42,7 @@ class AddressResolver {
         return ips[modulo(cnt.getAndIncrement(), ips.length)];
     }
 
-    protected InetAddress[] lookup() throws UnknownHostException {
+    InetAddress[] lookup() throws UnknownHostException {
         return InetAddress.getAllByName(hostname);
     }
 
