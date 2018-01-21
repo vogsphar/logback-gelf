@@ -73,7 +73,7 @@ public class GelfLayoutTest {
     }
 
     @Test
-    public void newline() throws IOException {
+    public void newline() {
         layout.setAppendNewline(true);
         layout.start();
 

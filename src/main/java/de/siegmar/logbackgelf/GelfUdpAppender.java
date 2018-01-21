@@ -29,8 +29,6 @@ import java.util.zip.DeflaterOutputStream;
 
 public class GelfUdpAppender extends AbstractGelfAppender {
 
-    private DatagramChannel channel;
-
     /**
      * Maximum size of GELF chunks in bytes. Default chunk size is 508 - this prevents
      * IP packet fragmentation. This is also the recommended minimum.
@@ -42,7 +40,11 @@ public class GelfUdpAppender extends AbstractGelfAppender {
      */
     private boolean useCompression = true;
 
+    private DatagramChannel channel;
+
     private GelfUdpChunker chunker;
+
+    private AddressResolver addressResolver;
 
     public Integer getMaxChunkSize() {
         return maxChunkSize;
@@ -64,13 +66,15 @@ public class GelfUdpAppender extends AbstractGelfAppender {
     protected void startAppender() throws IOException {
         channel = DatagramChannel.open();
         chunker = new GelfUdpChunker(maxChunkSize);
+        addressResolver = new AddressResolver(getGraylogHost());
     }
 
     @Override
     protected void appendMessage(final byte[] binMessage) throws IOException {
         final byte[] messageToSend = useCompression ? compress(binMessage) : binMessage;
 
-        final InetSocketAddress remote = new InetSocketAddress(getGraylogHost(), getGraylogPort());
+        final InetSocketAddress remote = new InetSocketAddress(addressResolver.resolve(),
+            getGraylogPort());
 
         for (final ByteBuffer chunk : chunker.chunks(messageToSend)) {
             while (chunk.hasRemaining()) {
@@ -82,7 +86,7 @@ public class GelfUdpAppender extends AbstractGelfAppender {
     private static byte[] compress(final byte[] binMessage) {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream(binMessage.length);
         try {
-            try (final OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
+            try (OutputStream deflaterOut = new DeflaterOutputStream(bos)) {
                 deflaterOut.write(binMessage);
             }
         } catch (final IOException e) {

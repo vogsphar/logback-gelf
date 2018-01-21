@@ -55,7 +55,7 @@ public class GelfTcpAppenderTest {
     }
 
     @Test
-    public void simple() throws IOException, InterruptedException {
+    public void simple() throws IOException {
         final Logger logger = setupLogger();
 
         logger.error("Test message");
@@ -135,8 +135,8 @@ public class GelfTcpAppenderTest {
 
         @Override
         public void run() {
-            try (final Socket socket = server.accept()) {
-                try (final DataInputStream in = new DataInputStream(socket.getInputStream())) {
+            try (Socket socket = server.accept()) {
+                try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
                     receivedData = ByteStreams.toByteArray(in);
                 }
             } catch (final IOException e) {
