@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Simple connection pooling in GelfTcpAppender & round robin host lookup in GelfUdpAppender
   [\#11](https://github.com/osiegmar/logback-gelf/issues/11)
 
+### Changed
+- Update dependency to logback 1.1.8
+  [\#1](https://github.com/osiegmar/logback-gelf/issues/1)
+
 ### Fixed
 - The reconnect interval could not be disabled
   [\#12](https://github.com/osiegmar/logback-gelf/issues/12)
