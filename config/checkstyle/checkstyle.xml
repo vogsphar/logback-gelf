@@ -60,6 +60,7 @@
     <module name="Header">
         <property name="headerFile" value="${samedir}/java.header"/>
         <property name="fileExtensions" value="java"/>
+        <property name="ignoreLines" value="3"/>
     </module>
 
     <module name="TreeWalker">
@@ -84,14 +85,12 @@
         <!--<module name="EmptyCatchBlock">-->
             <!--<property name="exceptionVariableName" value="expected"/>-->
         <!--</module>-->
-        <module name="LeftCurly">
-            <property name="maxLineLength" value="100"/>
-        </module>
+        <module name="LeftCurly"/>
         <module name="NeedBraces"/>
         <module name="RightCurly"/>
         <module name="RightCurly">
             <property name="option" value="alone"/>
-            <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT"/>
+            <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT"/>
         </module>
         <module name="AvoidNestedBlocks"/>
 
@@ -177,7 +176,7 @@
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="ImportOrder">
-            <property name="groups" value="/^javax?\./,org,com"/>
+            <property name="groups" value="/^java\./,javax,org,com"/>
             <property name="ordered" value="true"/>
             <property name="separated" value="true"/>
             <property name="option" value="top"/>

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
@@ -63,7 +64,7 @@ public class GelfTcpTlsAppenderTest {
     }
 
     @Test
-    public void simple() throws IOException, InterruptedException {
+    public void simple() throws IOException {
         final Logger logger = setupLogger();
 
         logger.error("Test message");
@@ -146,8 +147,8 @@ public class GelfTcpTlsAppenderTest {
 
         @Override
         public void run() {
-            try (final Socket socket = server.accept()) {
-                try (final DataInputStream in = new DataInputStream(socket.getInputStream())) {
+            try (Socket socket = server.accept()) {
+                try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
                     receivedData = ByteStreams.toByteArray(in);
                 }
             } catch (final IOException e) {

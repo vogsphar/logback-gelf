@@ -38,6 +38,7 @@ Features
 - UDP (with chunking)
 - TCP (with or without TLS encryption)
 - Deflate compression in UDP mode
+- Client side load balancing (round robin)
 - Forwarding of MDC (Mapped Diagnostic Context)
 - Forwarding of caller data
 - Forwarding of static fields
@@ -161,6 +162,8 @@ Advanced TCP configuration:
         <reconnectInterval>300</reconnectInterval>
         <maxRetries>2</maxRetries>
         <retryDelay>3000</retryDelay>
+        <poolSize>2</poolSize>
+        <poolMaxWaitTime>5000</poolMaxWaitTime>
         <layout class="de.siegmar.logbackgelf.GelfLayout">
             <originHost>localhost</originHost>
             <includeRawMessage>false</includeRawMessage>
@@ -205,6 +208,8 @@ Advanced TCP with TLS configuration:
         <reconnectInterval>300</reconnectInterval>
         <maxRetries>2</maxRetries>
         <retryDelay>3000</retryDelay>
+        <poolSize>2</poolSize>
+        <poolMaxWaitTime>5000</poolMaxWaitTime>
         <trustAllCertificates>false</trustAllCertificates>
         <layout class="de.siegmar.logbackgelf.GelfLayout">
             <originHost>localhost</originHost>
@@ -246,6 +251,7 @@ Configuration
 `de.siegmar.logbackgelf.GelfUdpAppender`
 
 * **graylogHost**: IP or hostname of graylog server.
+  If the hostname resolves to multiple ip addresses, round robin will be used.
 * **graylogPort**: Port of graylog server. Default: 12201.
 * **layout**: See Layout configuration below.
 * **maxChunkSize**: Maximum size of GELF chunks in bytes. Default chunk size is 508 - this prevents
@@ -257,15 +263,19 @@ Configuration
 `de.siegmar.logbackgelf.GelfTcpAppender`
 
 * **graylogHost**: IP or hostname of graylog server.
+  If the hostname resolves to multiple ip addresses, round robin will be used.
 * **graylogPort**: Port of graylog server. Default: 12201.
 * **layout**: See Layout configuration below.
 * **connectTimeout**: Maximum time (in milliseconds) to wait for establishing a connection. A value
   of 0 disables the connect timeout. Default: 15,000 milliseconds.
 * **reconnectInterval**: Time interval (in seconds) after an existing connection is closed and
-  re-opened. A value of 0 disables automatic reconnects. Default: 300 seconds.
+  re-opened. A value of -1 disables automatic reconnects. Default: 60 seconds.
 * **maxRetries**: Number of retries. A value of 0 disables retry attempts. Default: 2.
 * **retryDelay**: Time (in milliseconds) between retry attempts. Ignored if maxRetries is 0.
   Default: 3,000 milliseconds.
+* **poolSize**: Number of concurrent tcp connections (minimum 1). Default: 2.
+* **poolMaxWaitTime**: Maximum amount of time (in milliseconds) to wait for a connection to become
+  available from the pool. A value of -1 disables the timeout. Default: 5,000 milliseconds.
 
 
 `de.siegmar.logbackgelf.GelfTcpTlsAppender`
@@ -310,7 +320,7 @@ Contribution
 Copyright
 ---------
 
-Copyright (C) 2016 Oliver Siegmar
+Copyright (C) 2016-2018 Oliver Siegmar
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

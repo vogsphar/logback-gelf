@@ -56,7 +56,7 @@ public class GelfUdpAppenderTest {
     }
 
     @Test
-    public void simple() throws IOException, InterruptedException {
+    public void simple() throws IOException {
         final Logger logger = setupLogger(false);
 
         logger.error("Test message");
@@ -74,7 +74,7 @@ public class GelfUdpAppenderTest {
     }
 
     @Test
-    public void compression() throws IOException, InterruptedException {
+    public void compression() throws IOException {
         final Logger logger = setupLogger(true);
 
         logger.error("Test message");
