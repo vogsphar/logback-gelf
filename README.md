@@ -49,7 +49,7 @@ Requirements
 ------------
 
 - Java 7
-- Logback 1.1.3 (or later -- except 1.1.7 because of issue #1)
+- Logback 1.1.8
 
 
 Example

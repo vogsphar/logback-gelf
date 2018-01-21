@@ -41,7 +41,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ch.qos.logback.core.ContextBase;
 
 public class GelfLayoutTest {
 
@@ -51,7 +50,7 @@ public class GelfLayoutTest {
 
     @Before
     public void before() {
-        layout.setContext(new ContextBase());
+        layout.setContext(new LoggerContext());
         layout.setOriginHost("localhost");
     }
 
@@ -150,8 +149,8 @@ public class GelfLayoutTest {
         assertEquals("java.lang.IllegalArgumentException: Example Exception", msg.readLine());
         final String line = msg.readLine();
         assertTrue("Unexpected line: " + line, line.matches(
-            "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception\\(GelfLayoutTest.java:\\d+\\) "
-                + "~\\[.+/:na]$"));
+            "^\tat de.siegmar.logbackgelf.GelfLayoutTest.exception"
+                + "\\(GelfLayoutTest.java:\\d+\\)$"));
     }
 
     @Test
