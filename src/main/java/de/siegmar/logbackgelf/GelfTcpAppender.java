@@ -44,8 +44,8 @@ public class GelfTcpAppender extends AbstractGelfAppender {
     private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
 
     /**
-     * Time interval (in seconds) after an existing connection is closed and re-opened.
-     * A value of 0 disables automatic reconnects. Default: 300 seconds.
+     * Time interval (in seconds) after an existing connection is closed and
+     * re-opened. A value of -1 disables automatic reconnects. Default: 60 seconds.
      */
     private int reconnectInterval = DEFAULT_RECONNECT_INTERVAL;
 
@@ -67,7 +67,7 @@ public class GelfTcpAppender extends AbstractGelfAppender {
 
     /**
      * Maximum amount of time (in milliseconds) to wait for a connection to become
-     * available from the pool. Default: 5,000 milliseconds.
+     * available from the pool. A value of -1 disables the timeout. Default: 5,000 milliseconds.
      */
     private int poolMaxWaitTime = DEFAULT_POOL_MAX_WAIT_TIME;
 
